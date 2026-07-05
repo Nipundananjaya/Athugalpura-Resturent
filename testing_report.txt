@@ -1,0 +1,234 @@
+================================================================================
+          ATHUGALPURA QR ORDERING SYSTEM - COMPREHENSIVE TESTING REPORT
+================================================================================
+Document Type: Core System Testing & Verification Report
+File Name:     testing_report.txt
+Target System: Athugalpura Restaurant QR Ordering & SmartServe Suite
+Date:          June 21, 2026
+Status:        ALL FUNCTIONAL MODULES PASSED
+================================================================================
+
+This document details the functional test cases, step-by-step verification,
+expected results, and actual outcomes for the core modules of the Athugalpura 
+QR Ordering System.
+
+--------------------------------------------------------------------------------
+1. MODULE A: LOGIN & AUTHENTICATION SYSTEM
+--------------------------------------------------------------------------------
+Files: index.html, login.php, logout.php, db_connect.php
+
+* TC-LOG-01: Role-Based User Login (Successful)
+  - Objective: Verify that staff members can log in using their credentials and 
+    role, and are correctly routed to their designated dashboards.
+  - Steps:
+    1. Open index.html.
+    2. Click on the "Admin" role tab.
+    3. Input "admin" as username and "admin123" as password.
+    4. Click "Sign In".
+  - Expected Result: AJAX request is sent to login.php, returning a success JSON, 
+    regenerating session id, and redirecting the browser to admin.html.
+  - Actual Result: PASS. Session created; redirected successfully.
+
+* TC-LOG-02: Hashed Password Verification (Staff Accounts)
+  - Objective: Verify that staff registered via the Admin panel can log in 
+    securely using the BCRYPT hashed passwords stored in the database.
+  - Steps:
+    1. Click on the "Waiter" role tab on the login screen.
+    2. Enter a registered waiter's name as username.
+    3. Enter their NIC card number (password) as password.
+    4. Click "Sign In".
+  - Expected Result: The password hash matches in login.php (via password_verify),
+    session is initiated, and browser redirects to waiter.html.
+  - Actual Result: PASS. Password verified and user logged in.
+
+* TC-LOG-03: Authentication Failures & Validation
+  - Objective: Verify that incorrect credentials or empty fields trigger clear 
+    error indicators.
+  - Steps:
+    1. Leave fields empty and click "Sign In". Verify error.
+    2. Enter incorrect password for a user. Verify error.
+    3. Select "Kitchen" tab but enter an Admin username. Verify error.
+  - Expected Result: Appropriate JSON failure responses: "All fields are 
+    required", "Incorrect password", or "No kitchen account found with that username".
+  - Actual Result: PASS. Clean error labels displayed below form.
+
+* TC-LOG-04: Session Guard & Directory Protection
+  - Objective: Ensure unauthorized guests cannot bypass login by typing direct 
+    dashboard URLs in the browser.
+  - Steps:
+    1. Clear browser cookies/sessions.
+    2. Try to directly navigate to admin.html, waiter.html, or kitchen.html.
+  - Expected Result: Dashboard session checks (e.g. check_session.php) identify 
+    no session user_id/role, block page loading, and redirect user to index.html.
+  - Actual Result: PASS. Direct navigation is blocked.
+
+* TC-LOG-05: Logout Action
+  - Objective: Clear all active credentials on logout.
+  - Steps:
+    1. Click the "Logout" button on any dashboard.
+  - Expected Result: Redirected to logout.php, which runs session_destroy(),
+    clears session variables, and redirects back to index.html.
+  - Actual Result: PASS. Session cleared immediately.
+
+--------------------------------------------------------------------------------
+2. MODULE B: CUSTOMER MENU & ORDERING SYSTEM
+--------------------------------------------------------------------------------
+Files: customer menu.html, menu.html, order_api.php, menu_api.php
+
+* TC-CUST-01: Table Detection via Query Parameters
+  - Objective: Verify the customer menu parses the table number from the scanned 
+    QR code link automatically.
+  - Steps:
+    1. Open customer menu.html?table=5 in browser.
+  - Expected Result: Interface reads table=5 from query parameters and displays 
+    "Table 5" in the header logo.
+  - Actual Result: PASS. Correctly loaded table index in header.
+
+* TC-CUST-02: Menu Rendering & Interactive Filtering
+  - Objective: Verify menu items load dynamically from the database and can 
+    be searched or filtered by category.
+  - Steps:
+    1. Open the customer menu.
+    2. Tap on category badges ("Appetizers", "Beverages").
+    3. Type a food item name in the search input box.
+  - Expected Result: Category badges isolate respective food items. Search bar 
+    filters items in real-time. Unavailable items show "Sold Out" badge.
+  - Actual Result: PASS. Rendering is quick, filters update instantly.
+
+* TC-CUST-03: Cart Actions & Calculations
+  - Objective: Test adding items to the cart, modifying quantities, and tax calculations.
+  - Steps:
+    1. Tap "+" on two different food items.
+    2. Increase quantity of one item.
+    3. Verify cart drawer values.
+  - Expected Result: Subtotal updates correctly. Service charge & tax (10%) is 
+    calculated, and Grand Total matches the formula (Subtotal + (Subtotal * 10%)).
+  - Actual Result: PASS. Values calculated accurately.
+
+* TC-CUST-04: Checkout & Transaction Integrity
+  - Objective: Ensure order is written to DB using a transaction so no partial 
+    or orphaned order records are created.
+  - Steps:
+    1. Tap "Place Order" button in the cart.
+  - Expected Result: JSON payload is sent to order_api.php. It inserts a row 
+    into 'orders', loops through items, retrieves actual database prices, 
+    adds item records, commits the transaction, and returns the order_id.
+  - Actual Result: PASS. Order recorded, database table state matches.
+
+* TC-CUST-05: Real-Time Order Tracking
+  - Objective: Track placed order statuses without manual page reloads.
+  - Steps:
+    1. Complete checkout to get order tracker.
+    2. Update status of the order in the Kitchen or Waiter panel.
+  - Expected Result: The tracking badge on the customer menu updates state from 
+    "Pending" -> "Preparing" -> "Ready to Serve" -> "Served" using polling.
+  - Actual Result: PASS. Tracker badge reflects exact database status changes.
+
+--------------------------------------------------------------------------------
+3. MODULE C: KITCHEN MONITORING STATION
+--------------------------------------------------------------------------------
+Files: kitchen.html, kitchen_api.php
+
+* TC-KITCH-01: Kanban Board Layout & Real-time Feeds
+  - Objective: Verify that new orders automatically show up in the Pending column.
+  - Steps:
+    1. Place a customer order.
+    2. Keep kitchen.html open in another window.
+  - Expected Result: A digital card showing the table number, order ID, elapsed 
+    time, and items appears in the "Pending" column.
+  - Actual Result: PASS. Board refreshes automatically every 3 seconds.
+
+* TC-KITCH-02: Status Progression Actions
+  - Objective: Test cooking status progression triggers.
+  - Steps:
+    1. Click "Accept & Cook" button on a Pending order card.
+    2. Click "Food Ready" button on a Preparing order card.
+  - Expected Result:
+    - Accept & Cook: order status changes to "preparing", moves to Prep column.
+    - Food Ready: status changes to "ready", moves to Ready column.
+  - Actual Result: PASS. Database update succeeds, columns redraw immediately.
+
+* TC-KITCH-03: Audio Alerts & Alerts for Overdue Orders
+  - Objective: Alert kitchen staff audibly for new orders and visually for delayed prep.
+  - Steps:
+    1. Inject a new order while kitchen.html is running.
+    2. Leave an order unattended in Pending/Preparing for 10+ minutes.
+  - Expected Result:
+    - Audio chime plays on new pending order.
+    - Order card shows red warning borders and clock pulses when elapsed time >= 10m.
+  - Actual Result: PASS. Audio alert triggers, delay warning state activates.
+
+--------------------------------------------------------------------------------
+4. MODULE D: WAITER CONTROL STATION
+--------------------------------------------------------------------------------
+Files: waiter.html, waiter_api.php, order_api.php
+
+* TC-WAIT-01: Table Status Map (20 Tables Grid)
+  - Objective: Verify the live table color status mapping on the waiter's grid.
+  - Steps:
+    1. Check color indicators on the Tables Overview panel.
+  - Expected Result:
+    - Grey outline: Idle tables (no active orders).
+    - Yellow outline: Tables with Pending orders.
+    - Blue outline: Tables with Preparing orders.
+    - Green pulsing outline: Tables with Ready orders (food needs to be served).
+  - Actual Result: PASS. Table states match active order columns in real-time.
+
+* TC-WAIT-02: Waiter Order Creation flow
+  - Objective: Test order placement by a waiter on behalf of a table.
+  - Steps:
+    1. Click "New Order" button.
+    2. Select Table 8 from dropdown, add items, and click "Send Order to Kitchen".
+  - Expected Result: Order is placed successfully, table grid updates, modal closes.
+  - Actual Result: PASS. Waiter cart operates correctly.
+
+* TC-WAIT-03: Receipt Printing Preview
+  - Objective: Verify formatted receipt generation for customers.
+  - Steps:
+    1. Click "Receipt" button on an active/served order card.
+  - Expected Result: Pop-up modal shows a thermal receipt layout (Courier font, 
+    logo, table number, itemized quantities, subtotal, 10% tax, total).
+  - Actual Result: PASS. Thermal receipt displays nicely, "Print" action calls 
+    window.print().
+
+--------------------------------------------------------------------------------
+5. MODULE E: ADMINISTRATION CONSOLE
+--------------------------------------------------------------------------------
+Files: admin.html, admin_api.php, staff_api.php, qr_api.php, menu_api.php
+
+* TC-ADM-01: Live Statistics Dashboard
+  - Objective: Verify real-time financial stats and graphs.
+  - Expected Result: Revenue sum, active order counters, Served items, and Chart.js
+    category sales data update dynamically on loading.
+  - Actual Result: PASS. Dashboard panels map correct aggregations.
+
+* TC-ADM-02: Menu Items CRUD Operations
+  - Objective: Add, edit, toggle availability, and delete food items.
+  - Steps:
+    1. Open Menu tab, fill form to add item with image file. Verify creation.
+    2. Toggle availability switch. Verify state change in client menu.
+    3. Click delete on an item. Verify removal.
+  - Expected Result: Items added to 'menu_items', files saved to /uploads/ folder, 
+    and frontend menu reflects changes instantly.
+  - Actual Result: PASS. File uploads and database updates are fully synced.
+
+* TC-ADM-03: Staff Registrations
+  - Objective: Register staff and generate their corresponding login records.
+  - Steps:
+    1. Go to Staff tab, register a Waiter staff with name "Kamal" and NIC "950123456V".
+  - Expected Result: Inserted into 'staff' table, and user account with username 
+    "Kamal" and BCRYPT hash of "950123456V" is written to the 'users' table.
+  - Actual Result: PASS. Accounts generated successfully.
+
+* TC-ADM-04: QR Code Generator & Modal Interface
+  - Objective: Generate QR codes by table number and manage them via modal.
+  - Steps:
+    1. Open Tables & QR codes section.
+    2. Generate QR for Table 12. Verify card creation.
+    3. Click on the Table 12 Card to open modal.
+    4. Click Download QR. Click Delete QR.
+  - Expected Result: Base64 QR code image is saved to uploads/qrcodes/table_12.png, 
+    link points to customer menu, file downloads on download button click, and 
+    deletes file on server when delete button is confirmed.
+  - Actual Result: PASS. Grid card and modal popup handle assets correctly.
+================================================================================

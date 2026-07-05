@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="supabase_helper.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Athugalpura - Premium Menu</title>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Feather Icons -->
+<script src="https://unpkg.com/feather-icons"></script>
+
+<style>
+/* ===== PREMIUM CSS VARIABLES ===== */
+:root {
+  --primary: #FF4B2B;
+  --primary-gradient: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+  --primary-light: #FFECE8;
+  --primary-dark: #E03A1C;
+  --bg: #FDF9F7;
+  --surface: #FFFFFF;
+  --text-main: #1A1D1E;
+  --text-muted: #8A92A6;
+  --border: #F0F2F5;
+  --shadow-sm: 0 4px 12px rgba(255, 75, 43, 0.05);
+  --shadow-md: 0 8px 24px rgba(255, 75, 43, 0.1);
+  --shadow-lg: 0 12px 32px rgba(255, 75, 43, 0.25);
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding-bottom: 140px; 
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* COLORFUL MESH BACKGROUND */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: 
+    radial-gradient(circle at 0% 0%, rgba(255, 65, 108, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(255, 195, 113, 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 100% 0%, rgba(76, 175, 80, 0.05) 0%, transparent 30%);
+  z-index: -1;
+}
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(253, 249, 247, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px 24px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.brand-info h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-info h1 span {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-info p {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-badge {
+  background: var(--text-main);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-cart-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.header-cart-btn:active {
+  transform: scale(0.9);
+}
+
+.header-cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
+}
+
+/* ===== SEARCH BAR ===== */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  padding: 16px 20px 16px 50px;
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  width: 20px;
+  height: 20px;
+  transition: color 0.3s ease;
+}
+
+.search-input:focus + .search-icon {
+  color: var(--primary);
+}
+
+/* ===== CATEGORIES (HORIZONTAL SCROLL) ===== */
+.categories-container {
+  padding: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  display: flex;
+  gap: 12px;
+}
+.categories-container::-webkit-scrollbar { display: none; }
+
+.cat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255,255,255,0.8);
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.cat-pill:active {
+  transform: scale(0.95);
+}
+
+.cat-pill.active {
+  background: var(--primary-gradient);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+.cat-emoji {
+  font-size: 18px;
+}
+
+/* ===== MENU LIST ===== */
+.menu-section {
+  padding: 0 24px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Responsive Grid for Tablets/Desktops */
+@media (min-width: 600px) {
+  .menu-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+/* ===== ITEM CARD (LIST STYLE) ===== */
+.item-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255,255,255,0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.item-image {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #FDF0E9 0%, #F5E8FB 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.item-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.item-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.item-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.add-btn {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-btn:hover, .add-btn:active {
+  background: var(--primary-gradient);
+  color: #fff;
+  transform: scale(0.95);
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-main);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qty-btn:active {
+  background: var(--border);
+}
+
+.qty-value {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ===== FLOATING CART BAR ===== */
+.floating-cart-wrapper {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(150%);
+  width: calc(100% - 48px);
+  max-width: 400px;
+  z-index: 150;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-cart-wrapper.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.floating-cart {
+  background: var(--text-main);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(26, 29, 30, 0.4);
+}
+
+.fc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fc-badge {
+  background: var(--primary-gradient);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 10px rgba(255, 75, 43, 0.4);
+}
+
+.fc-text {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fc-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* ===== CART BOTTOM SHEET ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cart-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 201;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+}
+
+@media (min-width: 600px) {
+  .cart-sheet {
+    max-width: 450px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+  }
+  .cart-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.cart-sheet.open {
+  transform: translateY(0);
+}
+
+.sheet-drag {
+  width: 40px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 100px;
+  margin: 16px auto;
+}
+
+.sheet-header {
+  padding: 0 24px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheet-header h2 {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.close-btn {
+  background: var(--bg);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.sheet-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ci-emoji {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FDF0E9 0%, #F5E8FB 100%);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.ci-info {
+  flex: 1;
+}
+
+.ci-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.ci-price {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.bill-summary {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.bill-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--border);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.sheet-footer {
+  padding: 20px 24px 30px;
+  border-top: 1px solid var(--border);
+}
+
+.checkout-btn {
+  width: 100%;
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  padding: 18px;
+  border-radius: 100px;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s;
+}
+
+.checkout-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== SUCCESS SCREEN ===== */
+.success-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--surface);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s ease;
+}
+
+.success-screen.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.success-circle {
+  width: 120px;
+  height: 120px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  color: var(--primary);
+  transform: scale(0.5);
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-screen.show .success-circle {
+  transform: scale(1);
+}
+
+.success-screen h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.success-screen p {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+.order-badge {
+  background: var(--bg);
+  padding: 16px 32px;
+  border-radius: 100px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 40px;
+  border: 2px dashed var(--border);
+}
+
+.back-btn {
+  background: var(--text-main);
+  color: #fff;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 100px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+}
+.empty-state i {
+  color: var(--border);
+  margin-bottom: 16px;
+}
+.empty-state h3 {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+.empty-state p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===== ITEM DETAIL MODAL ===== */
+.item-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  z-index: 400;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+.item-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+.item-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 401;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 -20px 60px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+@media (min-width: 600px) {
+  .item-modal {
+    max-width: 480px;
+    left: 50%;
+    bottom: 50%;
+    border-radius: var(--radius-lg);
+    max-height: 85vh;
+    transform: translateX(-50%) translateY(50%) scale(0.9);
+    opacity: 0;
+    visibility: hidden;
+  }
+  .item-modal.open {
+    transform: translateX(-50%) translateY(50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+  }
+}
+.item-modal.open {
+  transform: translateY(0);
+}
+.item-modal-drag {
+  width: 44px;
+  height: 5px;
+  background: var(--border);
+  border-radius: 100px;
+  margin: 14px auto 0;
+  flex-shrink: 0;
+}
+.item-modal-img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #FDF0E9 0%, #F5E8FB 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 90px;
+  margin-top: 12px;
+  position: relative;
+}
+.item-modal-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.item-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 5;
+}
+.item-modal-body {
+  padding: 20px 24px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+.item-modal-category {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.item-modal-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+.item-modal-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.item-modal-footer {
+  padding: 16px 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.item-modal-price {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.item-modal-price span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+.item-modal-add-btn {
+  flex: 1;
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 100px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s;
+}
+.item-modal-add-btn:active {
+  transform: scale(0.97);
+}
+.item-modal-qty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 100px;
+  padding: 6px 8px;
+}
+.item-modal-qty-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.item-modal-qty-btn:active {
+  background: var(--primary-gradient);
+  color: #fff;
+  transform: scale(0.9);
+}
+.item-modal-qty-val {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text-main);
+  min-width: 30px;
+  text-align: center;
+}
+.item-modal-soldout {
+  flex: 1;
+  background: #f5f5f5;
+  color: var(--text-muted);
+  border: none;
+  padding: 16px 24px;
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  cursor: not-allowed;
+}
+
+/* ===== STEPPER PROGRESS BAR ===== */
+.stepper-wrapper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 15px auto 30px;
+}
+
+.step-line {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 4px;
+  background: var(--border);
+  width: 100%;
+  z-index: 1;
+  transition: background 0.3s;
+}
+
+#stepProgressLine {
+  background: linear-gradient(to right, var(--primary) 0%, var(--border) 0%);
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  position: relative;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 8px;
+  transition: color 0.3s;
+}
+
+.step-node.active .step-num {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 0 0 6px var(--primary-light);
+}
+
+.step-node.active .step-label {
+  color: var(--text-main);
+}
+
+.step-node.completed .step-num {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.step-node.completed .step-label {
+  color: var(--primary);
+}
+
+.tracker-status-box {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+#trackerStatusHeader {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+#trackerStatusDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ===== FLOATING TRACKER BADGE ===== */
+.floating-tracker-badge {
+  position: fixed;
+  bottom: 24px; /* Default bottom, same level as cart if cart is hidden */
+  left: 50%;
+  transform: translateX(-50%) translateY(150%);
+  width: calc(100% - 48px);
+  max-width: 400px;
+  background: var(--text-main);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(26, 29, 30, 0.35);
+  z-index: 140;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.3s ease, background 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.floating-tracker-badge.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.floating-tracker-badge.with-cart {
+  bottom: 105px; /* Pushed up when the floating cart bar is visible */
+}
+
+.ftb-icon {
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: floatBounce 2s infinite alternate;
+}
+
+@keyframes floatBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.ftb-text {
+  flex: 1;
+}
+
+.ftb-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.ftb-title span {
+  color: var(--primary);
+}
+
+.ftb-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ===== TOAST ALERTS ===== */
+.toast-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-150%);
+  width: calc(100% - 48px);
+  max-width: 380px;
+  background: rgba(26, 29, 30, 0.95);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-left: 5px solid var(--primary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-alert.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast-alert.info { border-left-color: #3b82f6; }
+.toast-alert.success { border-left-color: #10b981; }
+.toast-alert.warning { border-left-color: #f59e0b; }
+.toast-alert.danger { border-left-color: #ef4444; }
+
+.toast-icon {
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.toast-message {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+/* ===== REQUEST BILL BUTTON ===== */
+.request-bill-btn {
+  display: none;
+  width: calc(100% - 48px);
+  margin: 16px 24px;
+  padding: 14px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s ease;
+}
+.request-bill-btn.visible {
+  display: flex;
+}
+.request-bill-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+.request-bill-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.request-bill-btn.sent {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-top">
+    <div class="brand-info">
+      <h1><img src="logo.png" alt="Athugalpura Logo" style="height: 32px; width: auto; border-radius: 6px; object-fit: contain;"> <span>Athugalpura</span></h1>
+      <p>Order your favorite meals easily</p>
+    </div>
+    <div class="header-actions">
+      <div class="table-badge" id="tableBadge">Table 5</div>
+      <button class="header-cart-btn" onclick="openCart()">
+        <i data-feather="shopping-cart" style="width:20px;height:20px;"></i>
+        <span class="header-cart-badge" id="headerCartCount">0</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search for dishes, drinks...">
+    <i data-feather="search" class="search-icon"></i>
+  </div>
+</header>
+
+<!-- CATEGORIES -->
+<div class="categories-container" id="categoryTabs">
+  <!-- Filled via JS -->
+</div>
+
+<!-- MENU LIST -->
+<div class="menu-section">
+  <h2 class="section-title" id="sectionTitle">Explore Menu</h2>
+  <div class="menu-list" id="menuWrap">
+    <!-- Filled via JS -->
+  </div>
+</div>
+
+<!-- FLOATING CART -->
+<div class="floating-cart-wrapper" id="floatingCart">
+  <div class="floating-cart" onclick="openCart()">
+    <div class="fc-left">
+      <div class="fc-badge" id="fcCount">0</div>
+      <div class="fc-text">View Cart</div>
+    </div>
+    <div class="fc-right">
+      <span id="fcTotal">Rs.0</span>
+      <i data-feather="chevron-right"></i>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY & CART SHEET -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<div class="cart-sheet" id="cartSheet">
+  <div class="sheet-drag"></div>
+  <div class="sheet-header">
+    <h2>Your Cart</h2>
+    <button class="close-btn" onclick="closeCart()">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  <div class="sheet-body" id="cartBody">
+    <!-- Filled via JS -->
+  </div>
+  <div class="sheet-footer" id="cartFooter">
+    <button class="checkout-btn" onclick="placeOrder()">
+      <span>Place Order</span>
+      <span id="checkoutTotal">Rs. 0</span>
+    </button>
+  </div>
+</div>
+
+<!-- SUCCESS SCREEN / ORDER STATUS TRACKER -->
+<div class="success-screen" id="successScreen">
+  <div style="margin-bottom: 24px; text-align: center;">
+    <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 4px;">Track Order</h2>
+    <p style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Athugalpura Premium Service</p>
+  </div>
+  
+  <div class="success-circle" id="trackerVisualCircle" style="background: var(--primary-light); color: var(--primary); width:100px; height:100px; margin-bottom:20px;">
+    <i data-feather="check" id="trackerVisualIcon" style="width: 50px; height: 50px;"></i>
+  </div>
+  
+  <div class="order-badge" id="orderIdText" style="margin-bottom: 24px;">#1001</div>
+  
+  <!-- STEPPER PROGRESS BAR -->
+  <div class="stepper-wrapper">
+    <div class="step-line" id="stepProgressLine"></div>
+    
+    <div class="step-node active" id="stepNode1">
+      <div class="step-num">1</div>
+      <div class="step-label">Placed</div>
+    </div>
+    
+    <div class="step-node" id="stepNode2">
+      <div class="step-num">2</div>
+      <div class="step-label">Preparing</div>
+    </div>
+    
+    <div class="step-node" id="stepNode3">
+      <div class="step-num">3</div>
+      <div class="step-label">Serving</div>
+    </div>
+  </div>
+
+  <div class="tracker-status-box">
+    <p id="trackerStatusHeader" style="margin-bottom: 6px;">Order Placed</p>
+    <p id="trackerStatusDesc">Waiting for kitchen to accept...</p>
+  </div>
+
+  <button class="back-btn" onclick="closeSuccess()" style="margin-top: 10px;">Back to Menu</button>
+</div>
+
+<!-- ITEM DETAIL MODAL -->
+<div class="item-modal-overlay" id="itemModalOverlay" onclick="closeItemModal()"></div>
+<div class="item-modal" id="itemModal">
+  <div class="item-modal-drag"></div>
+  <div class="item-modal-img" id="modalImgWrap">
+    <button class="item-modal-close" onclick="closeItemModal()">
+      <i data-feather="x" style="width:18px;height:18px;"></i>
+    </button>
+    <div class="item-modal-img-gradient"></div>
+  </div>
+  <div class="item-modal-body">
+    <div class="item-modal-category" id="modalCategory"></div>
+    <div class="item-modal-name" id="modalName"></div>
+    <div class="item-modal-desc" id="modalDesc"></div>
+    <div class="item-modal-divider"></div>
+  </div>
+  <div class="item-modal-footer">
+    <div class="item-modal-price-block">
+      <div class="item-modal-price-label">Price</div>
+      <div class="item-modal-price" id="modalPrice"></div>
+    </div>
+    <div id="modalAction"></div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+  feather.replace();
+
+  /* ===== CATEGORY EMOJI MAPPING ===== */
+  const categoryEmojis = {
+    'starters': '🥟',
+    'appetizers': '🥟',
+    'appetizer': '🥟',
+    'main course': '🍛',
+    'main': '🍛',
+    'breads': '🫓',
+    'bread': '🫓',
+    'beverages': '🥤',
+    'beverage': '🥤',
+    'drinks': '🥤',
+    'desserts': '🍨',
+    'dessert': '🍨',
+    'traditional': '🍛',
+    'rice': '🍚',
+    'noodles': '🍜'
+  };
+
+  /**
+   * English: Returns a matching emoji for a given food category name (e.g. 'drinks' → 🥤). Falls back to 🍽️ if no match found.
+   * Sinhala: දී ඇති ආහාර වර්ග නාමය සඳහා ගැළපෙන emoji එකක් ලබා දෙයි (උදා: 'drinks' → 🥤). ගැළපීමක් නොමැති නම් 🍽️ ලබා දෙයි.
+   */
+  function getCategoryEmoji(catName) {
+    if (!catName) return '🍽️';
+    const norm = catName.toLowerCase().trim();
+    return categoryEmojis[norm] || '🍽️';
+  }
+
+  /* ===== STATE ===== */
+  let menuData = [];
+  let categories = [{ id: 'all', name: 'All Menu', emoji: '✨' }];
+  let cart = [];
+  let currentCat = 'all';
+  let searchQuery = '';
+  let currentTableNum = 5; // default fallback if no table query param is present
+
+  /* ===== INIT ===== */
+  /**
+   * English: Initialises the page — reads the table number from the URL, fetches the menu, sets up the search listener, and starts the order tracker.
+   * Sinhala: පිටුව ආරම්භ කරයි — URL එකෙන් මේස අංකය කියවයි, මෙනු ලබා ගනී, සෙවීම් සවන්දෙන්නා සකසයි, සහ ඇණවුම් tracker ආරම්භ කරයි.
+   */
+  function init() {
+    // Parse table number from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableNum = urlParams.get('table');
+    if (tableNum) {
+      currentTableNum = parseInt(tableNum);
+      document.getElementById('tableBadge').textContent = 'Table ' + currentTableNum;
+    } else {
+      document.getElementById('tableBadge').textContent = 'Takeaway';
+    }
+
+    // Fetch dynamic menu items
+    fetchMenu();
+
+    // Search Listener
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase();
+      renderMenu();
+    });
+
+    // Initialize Order Tracker
+    initTracker();
+  }
+
+  /* ===== FETCH MENU FROM DATABASE ===== */
+  /**
+   * English: Fetches the live menu from menu_api.php, builds dynamic categories, and renders both the category tabs and item cards.
+   * Sinhala: menu_api.php හරහා live මෙනු ලබාගෙන, categories ගොඩනඟා, category tabs සහ item cards දෙකම render කරයි.
+   */
+  function fetchMenu() {
+    const wrap = document.getElementById('menuWrap');
+    wrap.innerHTML = '<div class="empty-state"><h3>Loading menu items...</h3></div>';
+
+    fetch('menu_api.php?action=fetch')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          menuData = data.data;
+          
+          // Dynamically extract and build categories from live items
+          buildCategories();
+          
+          renderCategories();
+          renderMenu();
+        } else {
+          wrap.innerHTML = `
+            <div class="empty-state">
+              <i data-feather="alert-circle" style="width: 48px; height: 48px; stroke-width: 1; color: var(--primary);"></i>
+              <h3>Failed to load menu</h3>
+              <p>${data.message || 'Error occurred while fetching menu items.'}</p>
+            </div>
+          `;
+          feather.replace();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        wrap.innerHTML = `
+          <div class="empty-state">
+            <i data-feather="alert-circle" style="width: 48px; height: 48px; stroke-width: 1; color: var(--primary);"></i>
+            <h3>Connection Error</h3>
+            <p>Could not connect to the menu database. Make sure your Apache server is running.</p>
+          </div>
+        `;
+        feather.replace();
+      });
+  }
+
+  /* ===== DYNAMIC CATEGORY BUILDER ===== */
+  /**
+   * English: Builds the categories array dynamically from the fetched menu data — extracts unique category names, sorts them alphabetically, and assigns matching emojis.
+   * Sinhala: ලබාගත් මෙනු දත්ත වලින් categories array ගතිකව ගොඩනඟයි — අනන්‍ය category නාම ඔකු කර, අකාරාදී අනුපිළිවෙලට සකසා, ගැළපෙන emoji ලබා දෙයි.
+   */
+  function buildCategories() {
+    categories = [{ id: 'all', name: 'All Menu', emoji: '✨' }];
+    
+    // Extract unique category names
+    const uniqueCats = [];
+    menuData.forEach(item => {
+      if (item.category && !uniqueCats.includes(item.category)) {
+        uniqueCats.push(item.category);
+      }
+    });
+
+    // Sort categories alphabetically
+    uniqueCats.sort();
+
+    // Push into categories array
+    uniqueCats.forEach(cat => {
+      categories.push({
+        id: cat.toLowerCase().replace(/\s+/g, '-'),
+        name: cat,
+        emoji: getCategoryEmoji(cat)
+      });
+    });
+  }
+
+  /* ===== RENDER CATEGORIES ===== */
+  /**
+   * English: Renders the category filter pills/tabs into the UI and highlights the currently active category.
+   * Sinhala: Category filter pills/tabs UI එකට render කරයි සහ දැනට සක්‍රිය category ඉස්මතු කරයි.
+   */
+  function renderCategories() {
+    const wrap = document.getElementById('categoryTabs');
+    wrap.innerHTML = categories.map(cat => `
+      <div class="cat-pill ${currentCat === cat.id ? 'active' : ''}" onclick="filterCat('${cat.id}')">
+        <span class="cat-emoji">${cat.emoji}</span>
+        ${cat.name}
+      </div>
+    `).join('');
+  }
+
+  /**
+   * English: Sets the selected category as active and re-renders the category tabs and menu items.
+   * Sinhala: තෝරාගත් category සක්‍රිය ලෙස සකසා category tabs සහ menu items නැවත render කරයි.
+   */
+  function filterCat(id) {
+    currentCat = id;
+    renderCategories(); // update active state
+    renderMenu();
+  }
+
+  /* ===== RENDER MENU ===== */
+  /**
+   * English: Filters menu items by the active category and search query, then renders matching item cards into the page. Shows an empty-state message if nothing matches.
+   * Sinhala: සක්‍රිය category සහ සෙවීම් query අනුව menu items පෙරා, ගැළපෙන item cards පිටුවට render කරයි. කිසිවක් නොගැළපෙන්නේ නම් හිස් ස්ථාන පණිවිඩයක් පෙන්වයි.
+   */
+  function renderMenu() {
+    const wrap = document.getElementById('menuWrap');
+    const title = document.getElementById('sectionTitle');
+    
+    let filtered = menuData;
+    
+    // Apply Category Filter
+    if (currentCat !== 'all') {
+      filtered = filtered.filter(item => {
+        const catId = item.category ? item.category.toLowerCase().replace(/\s+/g, '-') : 'uncategorized';
+        return catId === currentCat;
+      });
+      const selectedCat = categories.find(c => c.id === currentCat);
+      title.textContent = selectedCat ? selectedCat.name : "Explore Menu";
+    } else {
+      title.textContent = "Explore Menu";
+    }
+
+    // Apply Search Filter
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchQuery) || 
+        (item.description && item.description.toLowerCase().includes(searchQuery))
+      );
+      title.textContent = "Search Results";
+    }
+
+    if (filtered.length === 0) {
+      wrap.innerHTML = `
+        <div class="empty-state">
+          <i data-feather="search" style="width: 48px; height: 48px; stroke-width: 1;"></i>
+          <h3>No items found</h3>
+          <p>Try searching for something else.</p>
+        </div>
+      `;
+      feather.replace();
+      return;
+    }
+
+    wrap.innerHTML = filtered.map(item => {
+      const isAvailable = parseInt(item.is_available) === 1;
+      let actionHtml = '';
+      const cardClick = `openItemModal(${item.id})`;
+
+      if (!isAvailable) {
+        actionHtml = `<span style="font-size: 11px; font-weight: 700; color: #E03A1C; background: #FFECE8; padding: 6px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;">Sold Out</span>`;
+      } else {
+        const cartItem = cart.find(c => c.id === item.id);
+        const qty = cartItem ? cartItem.qty : 0;
+
+        actionHtml = `<button class="add-btn" onclick="updateQty(${item.id}, 1)">
+                            <i data-feather="plus"></i>
+                          </button>`;
+        
+        if (qty > 0) {
+          actionHtml = `
+            <div class="qty-control">
+              <button class="qty-btn" onclick="updateQty(${item.id}, -1)">
+                <i data-feather="minus" style="width:16px;height:16px;"></i>
+              </button>
+              <span class="qty-value">${qty}</span>
+              <button class="qty-btn" onclick="updateQty(${item.id}, 1)">
+                <i data-feather="plus" style="width:16px;height:16px;"></i>
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      // Live image rendering with emoji fallback
+      let imgHtml = '';
+      if (item.image_path) {
+        imgHtml = `<img src="${item.image_path}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);">`;
+      } else {
+        imgHtml = getCategoryEmoji(item.category);
+      }
+
+      return `
+        <div class="item-card" onclick="${cardClick}" style="cursor:pointer; ${!isAvailable ? 'opacity:0.65; filter:grayscale(30%);' : ''}">
+          <div class="item-image" style="position: relative;">
+            ${imgHtml}
+            ${!isAvailable ? '<span style="position: absolute; inset: 0; background: rgba(0,0,0,0.05); border-radius: var(--radius-sm);"></span>' : ''}
+          </div>
+          <div class="item-details">
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.description || '<span style="font-style:italic; opacity:0.5;">No description.</span>'}</div>
+            <div class="item-footer">
+              <div class="item-price">Rs. ${parseFloat(item.price).toFixed(2)}</div>
+              <div onclick="event.stopPropagation()">${actionHtml}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    feather.replace();
+  }
+
+  /* ===== CART LOGIC ===== */
+  /**
+   * English: Adds or removes a menu item from the cart. Positive delta adds; negative reduces quantity. Removes item if quantity reaches zero, then refreshes the cart UI.
+   * Sinhala: Menu item එකක් cart එකට එකතු කරයි හෝ ඉවත් කරයි. ධන delta එකතු කරයි; ඍණ ප්‍රමාණය අඩු කරයි. ප්‍රමාණය ශූන්‍ය වූ විට item ඉවත් කර cart UI නැවත refresh කරයි.
+   */
+  function updateQty(id, delta) {
+    const item = menuData.find(m => m.id === id);
+    let cartItem = cart.find(c => c.id === id);
+
+    if (!cartItem) {
+      if (delta > 0) {
+        cart.push({ ...item, qty: 1 });
+      }
+    } else {
+      cartItem.qty += delta;
+      if (cartItem.qty <= 0) {
+        cart = cart.filter(c => c.id !== id);
+      }
+    }
+
+    updateCartCounts();
+    renderMenu(); // refresh buttons
+    
+    if (document.getElementById('cartSheet').classList.contains('open')) {
+      renderCartSheet(); // update if cart is open
+    }
+  }
+
+  /**
+   * English: Recalculates total cart quantity and price, then updates the header badge and the floating cart button. Hides the floating cart when empty.
+   * Sinhala: Cart හි මුළු ප්‍රමාණය සහ මිල නැවත ගණනය කර header badge සහ floating cart button යාවත්කාලීන කරයි. Cart හිස් වූ විට floating cart සඟවයි.
+   */
+  function updateCartCounts() {
+    const wrapper = document.getElementById('floatingCart');
+    const headerBadge = document.getElementById('headerCartCount');
+    
+    const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    const totalPrice = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.qty), 0);
+
+    // Update Header Badge
+    headerBadge.textContent = totalQty;
+    if(totalQty > 0) {
+      headerBadge.style.transform = 'scale(1)';
+    } else {
+      headerBadge.style.transform = 'scale(0)';
+    }
+
+    // Update Floating Cart
+    const trackerBadge = document.getElementById('orderTrackerBadge');
+    if (totalQty > 0) {
+      wrapper.classList.add('visible');
+      if (trackerBadge) trackerBadge.classList.add('with-cart');
+      document.getElementById('fcCount').textContent = totalQty;
+      document.getElementById('fcTotal').textContent = 'Rs. ' + totalPrice.toFixed(2);
+    } else {
+      wrapper.classList.remove('visible');
+      if (trackerBadge) trackerBadge.classList.remove('with-cart');
+      closeCart();
+    }
+  }
+
+  /* ===== CART SHEET UI ===== */
+  /**
+   * English: Opens the cart bottom sheet by rendering its contents and showing the overlay.
+   * Sinhala: Cart sheet හි අන්තර්ගතය render කර overlay පෙන්වීමෙන් cart bottom sheet විවෘත කරයි.
+   */
+  function openCart() {
+    renderCartSheet();
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('cartSheet').classList.add('open');
+  }
+
+  /**
+   * English: Closes the cart bottom sheet and hides the overlay.
+   * Sinhala: Cart bottom sheet වසා overlay සඟවයි.
+   */
+  function closeCart() {
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('cartSheet').classList.remove('open');
+  }
+
+  /**
+   * English: Renders the full cart contents (item rows, subtotal, tax, and total) inside the cart sheet panel.
+   * Sinhala: Cart sheet panel තුළ සම්පූර්ණ cart අන්තර්ගතය (item rows, subtotal, බදු, සහ මුළු මුදල) render කරයි.
+   */
+  function renderCartSheet() {
+    const body = document.getElementById('cartBody');
+    const footer = document.getElementById('cartFooter');
+    
+    if (cart.length === 0) {
+      body.innerHTML = `
+        <div class="empty-state">
+          <i data-feather="shopping-bag" style="width: 48px; height: 48px; stroke-width: 1;"></i>
+          <h3>Cart is empty</h3>
+          <p>Add some delicious items to your cart.</p>
+        </div>
+      `;
+      footer.style.display = 'none';
+      feather.replace();
+      return;
+    }
+
+    footer.style.display = 'block';
+
+    const itemsHtml = cart.map(c => {
+      let imgHtml = '';
+      if (c.image_path) {
+        imgHtml = `<img src="${c.image_path}" alt="${c.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);">`;
+      } else {
+        imgHtml = getCategoryEmoji(c.category);
+      }
+
+      return `
+        <div class="cart-item">
+          <div class="ci-emoji">${imgHtml}</div>
+          <div class="ci-info">
+            <div class="ci-name">${c.name}</div>
+            <div class="ci-price">Rs. ${parseFloat(c.price).toFixed(2)}</div>
+          </div>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="updateQty(${c.id}, -1)">
+              <i data-feather="minus" style="width:16px;height:16px;"></i>
+            </button>
+            <span class="qty-value">${c.qty}</span>
+            <button class="qty-btn" onclick="updateQty(${c.id}, 1)">
+              <i data-feather="plus" style="width:16px;height:16px;"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.qty), 0);
+    const tax = subtotal * 0.10; // 10% combined tax
+    const finalTotal = subtotal + tax;
+
+    const summaryHtml = `
+      <div class="bill-summary">
+        <div class="bill-row">
+          <span>Subtotal</span>
+          <span>Rs. ${subtotal.toFixed(2)}</span>
+        </div>
+        <div class="bill-row">
+          <span>Taxes (10%)</span>
+          <span>Rs. ${tax.toFixed(2)}</span>
+        </div>
+        <div class="bill-total">
+          <span>Total</span>
+          <span style="color: var(--primary);">Rs. ${finalTotal.toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+
+    body.innerHTML = itemsHtml + summaryHtml;
+    document.getElementById('checkoutTotal').textContent = 'Rs. ' + finalTotal.toFixed(2);
+    feather.replace();
+  }
+
+  /* ===== PLACE REAL ORDER ===== */
+  /**
+   * English: Sends the cart contents as an order to order_api.php, clears the cart on success, shows the order success screen, and starts live order status tracking.
+   * Sinhala: Cart හි අන්තර්ගතය order_api.php වෙත ඇණවුමක් ලෙස යවයි, සාර්ථකව ම Cart හිස් කරයි, ඇණවුම් සාර්ථකත්ව තිරය පෙන්වා live ඇණවුම් තත්ත්ව ලුහුබැඩීම ආරම්භ කරයි.
+   */
+  function placeOrder() {
+    if (cart.length === 0) return;
+
+    const checkoutBtn = document.querySelector('.checkout-btn');
+    if (checkoutBtn) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.opacity = '0.7';
+      checkoutBtn.innerHTML = '<span>Placing Order...</span>';
+    }
+
+    // Generate or retrieve customer token
+    let customerToken = localStorage.getItem('customer_token');
+    if (!customerToken) {
+      customerToken = 'TK-' + Math.random().toString(36).substring(2, 9).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('customer_token', customerToken);
+    }
+
+    const payload = {
+      table_number: currentTableNum,
+      customer_token: customerToken,
+      items: cart.map(item => ({
+        id: item.id,
+        qty: item.qty
+      }))
+    };
+
+    fetch('order_api.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        closeCart();
+        document.getElementById('orderIdText').textContent = '#' + data.order_id;
+        document.getElementById('successScreen').classList.add('show');
+        
+        // Reset Cart
+        cart = [];
+        updateCartCounts();
+        renderMenu();
+
+        // Save order ID and start real-time tracking
+        localStorage.setItem('active_order_id', data.order_id);
+        activeOrderId = data.order_id;
+        
+        // Ask for system notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+        }
+        
+        startStatusPolling();
+      } else {
+        alert('Failed to place order: ' + data.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('A network error occurred. Failed to place order.');
+    })
+    .finally(() => {
+      if (checkoutBtn) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.style.opacity = '1';
+        checkoutBtn.innerHTML = '<span>Place Order</span><span id="checkoutTotal">Rs. 0</span>';
+      }
+    });
+  }
+
+  /**
+   * English: Hides the order success confirmation screen.
+   * Sinhala: ඇණවුම් සාර්ථකත්ව තහවුරු කිරීමේ තිරය සඟවයි.
+   */
+  function closeSuccess() {
+    document.getElementById('successScreen').classList.remove('show');
+  }
+
+  /* ===== ITEM DETAIL MODAL ===== */
+  /**
+   * English: Opens the item detail modal for a specific menu item — shows image/emoji, name, description, price, and add-to-cart controls.
+   * Sinhala: නිශ්චිත menu item එකක් සඳහා item detail modal විවෘත කරයි — රූපය/emoji, නාමය, විස්තරය, මිල, සහ cart controls පෙන්වයි.
+   */
+  function openItemModal(id) {
+    const item = menuData.find(m => m.id === id);
+    if (!item) return;
+
+    const isAvailable = parseInt(item.is_available) === 1;
+
+    // Image / emoji — keep close button & gradient overlay
+    const imgWrap = document.getElementById('modalImgWrap');
+    const closeBtn = imgWrap.querySelector('.item-modal-close');
+    imgWrap.innerHTML = '';
+    imgWrap.appendChild(closeBtn);
+
+    if (item.image_path) {
+      const img = document.createElement('img');
+      img.src = item.image_path;
+      img.alt = item.name;
+      imgWrap.style.fontSize = '';
+      imgWrap.appendChild(img);
+    } else {
+      imgWrap.style.fontSize = '100px';
+      imgWrap.appendChild(document.createTextNode(getCategoryEmoji(item.category)));
+    }
+    // Re-add gradient on top
+    const grad = document.createElement('div');
+    grad.className = 'item-modal-img-gradient';
+    imgWrap.appendChild(grad);
+
+    document.getElementById('modalCategory').textContent = item.category || 'Menu Item';
+    document.getElementById('modalName').textContent = item.name;
+    document.getElementById('modalDesc').textContent = item.description || 'No description available for this item.';
+    document.getElementById('modalPrice').textContent = 'Rs. ' + parseFloat(item.price).toFixed(2);
+
+    // Action button
+    const actionDiv = document.getElementById('modalAction');
+    if (!isAvailable) {
+      actionDiv.innerHTML = '<div class="item-modal-soldout">😔 Sold Out</div>';
+    } else {
+      renderModalAction(item);
+    }
+
+    // Prevent background scroll
+    document.body.style.overflow = 'hidden';
+
+    document.getElementById('itemModalOverlay').classList.add('open');
+    document.getElementById('itemModal').classList.add('open');
+    feather.replace();
+  }
+
+  /**
+   * English: Renders the Add-to-Cart button or quantity control inside the item detail modal based on the current cart quantity for that item.
+   * Sinhala: Item detail modal තුළ, දැනට cart හි ඇති ප්‍රමාණය අනුව Add-to-Cart බොත්තම හෝ quantity control render කරයි.
+   */
+  function renderModalAction(item) {
+    const actionDiv = document.getElementById('modalAction');
+    const cartItem = cart.find(c => c.id === item.id);
+    const qty = cartItem ? cartItem.qty : 0;
+
+    if (qty === 0) {
+      actionDiv.innerHTML = `
+        <button class="item-modal-add-btn" onclick="modalUpdateQty(${item.id}, 1)">
+          <i data-feather="plus" style="width:18px;height:18px;"></i>
+          Add to Cart
+        </button>
+      `;
+    } else {
+      actionDiv.innerHTML = `
+        <div class="item-modal-qty">
+          <button class="item-modal-qty-btn" onclick="modalUpdateQty(${item.id}, -1)">
+            <i data-feather="minus" style="width:16px;height:16px;"></i>
+          </button>
+          <span class="item-modal-qty-val">${qty}</span>
+          <button class="item-modal-qty-btn" onclick="modalUpdateQty(${item.id}, 1)">
+            <i data-feather="plus" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+      `;
+    }
+    feather.replace();
+  }
+
+  /**
+   * English: Updates the cart quantity for an item from inside the modal, then refreshes the modal's action buttons.
+   * Sinhala: Modal තුළ සිට item එකක cart ප්‍රමාණය යාවත්කාලීන කර, modal හි action buttons නැවත refresh කරයි.
+   */
+  function modalUpdateQty(id, delta) {
+    updateQty(id, delta); // reuse existing cart logic
+    const item = menuData.find(m => m.id === id);
+    if (item && parseInt(item.is_available) === 1) {
+      renderModalAction(item);
+    }
+  }
+
+  /**
+   * English: Closes the item detail modal and restores the background scroll.
+   * Sinhala: Item detail modal වසා background scroll නැවත සකස් කරයි.
+   */
+  function closeItemModal() {
+    document.getElementById('itemModalOverlay').classList.remove('open');
+    document.getElementById('itemModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* ===== LIVE STATUS TRACKING LOGIC ===== */
+  let trackerInterval = null;
+  let activeOrderId = null;
+  let lastKnownStatus = null; // Track order status changes for alerts
+
+  /**
+   * English: Checks localStorage for a saved active order ID and starts status polling if one exists. Also requests browser notification permission.
+   * Sinhala: localStorage හි සුරකින ලද සක්‍රිය ඇණවුම් ID එකක් ඇත්දැයි පරීක්ෂා කර ඇත්නම් status polling ආරම්භ කරයි. Browser notification අවසරයද ඉල්ලා සිටියි.
+   */
+  function initTracker() {
+    activeOrderId = localStorage.getItem('active_order_id');
+    if (activeOrderId) {
+      activeOrderId = parseInt(activeOrderId);
+      startStatusPolling();
+      
+      // Request system notification permission if not yet decided
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+  }
+
+  /**
+   * English: Starts polling for the active order status every 3 seconds and makes an immediate first call.
+   * Sinhala: සෑම තත්පර 3 කට වරක් සක්‍රිය ඇණවුම් තත්ත්වය polling ආරම්භ කරයි සහ වහාම පළමු ඇමතුම ලබා දෙයි.
+   */
+  function startStatusPolling() {
+    if (trackerInterval) clearInterval(trackerInterval);
+    pollOrderStatus(); // Instant first call
+    trackerInterval = setInterval(pollOrderStatus, 3000);
+  }
+
+  /**
+   * English: Fetches the current status of the active order from order_status_api.php. Fires status-change alerts and updates the tracker UI. Stops polling when the order is complete or not found.
+   * Sinhala: order_status_api.php හරහා සක්‍රිය ඇණවුම෪ වත්මන් තත්ත්වය ලබා ගනී. Status වෙනස් වූ විට alerts ක්‍රියාත්මක කර tracker UI යාවත්කාලීන කරයි. ඇණවුම සම්පූර්ණ හෝ නොමැති වූ විට polling නතර කරයි.
+   */
+  function pollOrderStatus() {
+    if (!activeOrderId) {
+      stopStatusPolling();
+      return;
+    }
+
+    fetch('order_status_api.php?order_id=' + activeOrderId)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Trigger notification alerts on status change transitions
+          if (lastKnownStatus !== null && lastKnownStatus !== data.status) {
+            triggerStatusAlert(data.status);
+          }
+          lastKnownStatus = data.status; // update state
+          
+          updateTrackerUI(data.status);
+        } else {
+          stopStatusPolling();
+          localStorage.removeItem('active_order_id');
+          lastKnownStatus = null;
+          document.getElementById('orderTrackerBadge').classList.remove('visible');
+        }
+      })
+      .catch(err => {
+        console.warn('Error fetching order status:', err);
+      });
+  }
+
+  /* ===== ALERTS & NOTIFICATIONS TRIGGERS ===== */
+  /**
+   * English: Fires all three notification types when the order status changes — audio chime, in-app toast, and browser push notification.
+   * Sinhala: ඇණවුම් තත්ත්වය වෙනස් වූ විට notification වර්ග තුනම ක්‍රියාත්මක කරයි — audio chime, in-app toast, සහ browser push notification.
+   */
+  function triggerStatusAlert(status) {
+    // 1. Play alert chime (Web Audio API Arpeggio)
+    playAlertSound();
+
+    // 2. Show In-App toast notification
+    showToastNotification(status);
+
+    // 3. Show Native System Push Notification
+    showBrowserNotification(status);
+  }
+
+  /**
+   * English: Plays a synthesised musical arpeggio chime (C5-E5-G5-C6) via the Web Audio API to notify the customer of an order status change.
+   * Sinhala: ඇණවුම් තත්ත්ව වෙනසක් ගැන ගනුදෙනුකාරයා දැනුවත් කිරීම සඳහා Web Audio API හරහා සංගීතමය arpeggio chime (C5-E5-G5-C6) ධාවනය කරයි.
+   */
+  function playAlertSound() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 arpeggio
+      const duration = 0.15;
+      
+      notes.forEach((freq, index) => {
+        const startTime = audioCtx.currentTime + (index * 0.07);
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        
+        gain.gain.setValueAtTime(0.12, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      });
+    } catch (e) {
+      console.warn("Chime playback failed:", e);
+    }
+  }
+
+  /**
+   * English: Displays an in-app toast notification at the bottom of the screen with a status-specific message and emoji. Auto-dismisses after 5 seconds.
+   * Sinhala: Status-specific පණිවිඩයක් සහ emoji සහිත in-app toast notification එකක් තිරයේ පහළ පෙන්වයි. තත්පර 5 කට පසු ස්වයංක්‍රීයව ඉවත් වෙයි.
+   */
+  function showToastNotification(status) {
+    // Remove old toast if exists
+    const existing = document.querySelector('.toast-alert');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-alert';
+    
+    let title = "Order Updated";
+    let message = "";
+    let emoji = "🛎️";
+    
+    if (status === 'preparing') {
+      toast.classList.add('info');
+      title = "Order Preparing! 🍳";
+      message = "Our chefs are cooking your order now.";
+      emoji = "🍳";
+    } else if (status === 'ready') {
+      toast.classList.add('success');
+      title = "Food is Ready! 🛎️";
+      message = "Your food is ready and on the way to your table.";
+      emoji = "🛎️";
+    } else if (status === 'served') {
+      toast.classList.add('success');
+      title = "Food Served! 🍽️";
+      message = "Your food has been served. Enjoy your meal!";
+      emoji = "🍽️";
+    } else if (status === 'cancelled') {
+      toast.classList.add('danger');
+      title = "Order Cancelled";
+      message = "Your order was cancelled. Please contact staff.";
+      emoji = "❌";
+    } else {
+      return;
+    }
+
+    toast.innerHTML = `
+      <div class="toast-icon">${emoji}</div>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+    
+    // Layout trigger for slide transition
+    toast.offsetHeight;
+    toast.classList.add('show');
+
+    // Dismiss toast after 5 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 500);
+    }, 5000);
+  }
+
+  /**
+   * English: Sends a native browser push notification (if permission is granted) to inform the customer of a status change.
+   * Sinhala: Status වෙනසක් ගැන ගනුදෙනුකාරයා දැනුවත් කිරීමට (අවසර ලබා දී ඇත්නම්) native browser push notification එකක් යවයි.
+   */
+  function showBrowserNotification(status) {
+    if (!("Notification" in window)) return;
+    
+    if (Notification.permission === "granted") {
+      let title = "Athugalpura Restaurant";
+      let body = "";
+      
+      if (status === 'preparing') {
+        body = "Your order is now being prepared! 🍳";
+      } else if (status === 'ready') {
+        body = "Your order is ready and being served! 🛎️";
+      } else if (status === 'served') {
+        body = "Your order has been served. Enjoy your meal! 🍽️";
+      } else if (status === 'cancelled') {
+        body = "Your order was cancelled.";
+      }
+      
+      if (body) {
+        try {
+          new Notification(title, {
+            body: body,
+            icon: 'logo.png',
+            tag: 'order-status-' + activeOrderId
+          });
+        } catch (e) {
+          console.warn("System Notification failed:", e);
+        }
+      }
+    }
+  }
+
+  /**
+   * English: Clears the polling interval timer and stops status polling.
+   * Sinhala: Polling interval timer ඉවත් කර status polling නතර කරයි.
+   */
+  function stopStatusPolling() {
+    if (trackerInterval) {
+      clearInterval(trackerInterval);
+      trackerInterval = null;
+    }
+  }
+
+  /**
+   * English: Updates the full order tracker panel UI — step nodes, progress line, status header text, and the floating tracker badge — based on the current order status.
+   * Sinhala: වත්මන් ඇණවුම් තත්ත්වය අනුව සම්පූර්ණ order tracker panel UI — step nodes, progress line, status header text, සහ floating tracker badge — යාවත්කාලීන කරයි.
+   */
+  function updateTrackerUI(status) {
+    const badge = document.getElementById('orderTrackerBadge');
+    if (badge) {
+      const hasCart = cart.reduce((sum, item) => sum + item.qty, 0) > 0;
+      if (hasCart) {
+        badge.classList.add('with-cart');
+      } else {
+        badge.classList.remove('with-cart');
+      }
+    }
+    const badgeStatusText = document.getElementById('ftbStatusText');
+    const badgeOrderId = document.getElementById('ftbOrderId');
+    const badgeIcon = document.getElementById('ftbIcon');
+    
+    const visualCircle = document.getElementById('trackerVisualCircle');
+    const statusHeader = document.getElementById('trackerStatusHeader');
+    const statusDesc = document.getElementById('trackerStatusDesc');
+    const orderIdText = document.getElementById('orderIdText');
+    
+    const stepLine = document.getElementById('stepProgressLine');
+    const node1 = document.getElementById('stepNode1');
+    const node2 = document.getElementById('stepNode2');
+    const node3 = document.getElementById('stepNode3');
+
+    orderIdText.textContent = '#' + activeOrderId;
+    badgeOrderId.textContent = '#' + activeOrderId;
+
+    // Reset styles
+    node1.className = 'step-node';
+    node2.className = 'step-node';
+    node3.className = 'step-node';
+
+    let iconName = 'check';
+
+    if (status === 'pending') {
+      stepLine.style.background = 'linear-gradient(to right, var(--primary) 0%, var(--border) 0%)';
+      node1.classList.add('active');
+      
+      iconName = 'clock';
+      
+      visualCircle.style.background = 'rgba(245, 158, 11, 0.1)';
+      visualCircle.style.color = '#f59e0b';
+      statusHeader.textContent = 'Order Placed!';
+      statusDesc.innerHTML = 'Your order is received and in queue.<br>Waiting for kitchen to accept...';
+      
+      badgeStatusText.textContent = 'Placed';
+      badgeStatusText.style.color = '#f59e0b';
+      badgeIcon.textContent = '🕒';
+      badge.classList.add('visible');
+      
+    } else if (status === 'preparing') {
+      stepLine.style.background = 'linear-gradient(to right, var(--primary) 50%, var(--border) 50%)';
+      node1.classList.add('completed');
+      node2.classList.add('active');
+      
+      iconName = 'flame';
+      
+      visualCircle.style.background = 'rgba(59, 130, 246, 0.1)';
+      visualCircle.style.color = '#3b82f6';
+      statusHeader.textContent = 'Preparing...';
+      statusDesc.innerHTML = 'Our chefs are preparing your meal.<br>Delicious food is on the way! 🍳';
+      
+      badgeStatusText.textContent = 'Preparing';
+      badgeStatusText.style.color = '#3b82f6';
+      badgeIcon.textContent = '🍳';
+      badge.classList.add('visible');
+      
+    } else if (status === 'ready') {
+      stepLine.style.background = 'linear-gradient(to right, var(--primary) 100%, var(--border) 100%)';
+      node1.classList.add('completed');
+      node2.classList.add('completed');
+      node3.classList.add('active');
+      
+      iconName = 'bell';
+      
+      visualCircle.style.background = 'rgba(16, 185, 129, 0.1)';
+      visualCircle.style.color = '#10b981';
+      statusHeader.textContent = 'Serving!';
+      statusDesc.innerHTML = 'Your food is cooked and ready to serve.<br>It is coming to your table right now! 🛎';
+      
+      badgeStatusText.textContent = 'Serving';
+      badgeStatusText.style.color = '#10b981';
+      badgeIcon.textContent = '🛎️';
+      badge.classList.add('visible');
+      
+    } else if (status === 'served') {
+      stepLine.style.background = 'linear-gradient(to right, var(--primary) 100%, var(--border) 100%)';
+      node1.classList.add('completed');
+      node2.classList.add('completed');
+      node3.classList.add('completed');
+      node3.classList.add('active');
+      
+      iconName = 'check';
+      
+      visualCircle.style.background = 'rgba(16, 185, 129, 0.1)';
+      visualCircle.style.color = '#10b981';
+      statusHeader.textContent = 'Served!';
+      statusDesc.innerHTML = 'Your order has been served.<br>Enjoy your delicious meal! 🍽️';
+      
+      badge.classList.remove('visible');
+      
+      localStorage.removeItem('active_order_id');
+      stopStatusPolling();
+      
+    } else if (status === 'cancelled') {
+      stepLine.style.background = 'var(--border)';
+      iconName = 'alert-triangle';
+      
+      visualCircle.style.background = 'rgba(239, 68, 68, 0.1)';
+      visualCircle.style.color = '#ef4444';
+      statusHeader.textContent = 'Order Cancelled';
+      statusDesc.innerHTML = 'This order was cancelled by the restaurant.<br>Please contact service staff.';
+      
+      badge.classList.remove('visible');
+      
+      localStorage.removeItem('active_order_id');
+      stopStatusPolling();
+    }
+
+    const iconContainer = document.getElementById('trackerVisualCircle');
+    iconContainer.innerHTML = `<i data-feather="${iconName}" id="trackerVisualIcon" style="width: 50px; height: 50px;"></i>`;
+    feather.replace();
+    updateBillButton();
+  }
+
+  function openActiveOrderTracker() {
+    if (activeOrderId) {
+      document.getElementById('successScreen').classList.add('show');
+      startStatusPolling();
+    }
+  }
+
+  /* ===== REQUEST BILL ===== */
+  function requestBill() {
+    if (!activeOrderId) return;
+    
+    const btn = document.getElementById('requestBillBtn');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Sending request...';
+    
+    fetch('session_api.php?action=request_bill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: activeOrderId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        btn.innerHTML = '✅ Bill Requested — Waiter Notified!';
+        btn.classList.add('sent');
+        localStorage.setItem('bill_requested_' + activeOrderId, '1');
+      } else {
+        btn.innerHTML = '❌ Failed — Try Again';
+        btn.disabled = false;
+      }
+    })
+    .catch(() => {
+      btn.innerHTML = '❌ Network Error — Try Again';
+      btn.disabled = false;
+    });
+  }
+
+  function updateBillButton() {
+    const btn = document.getElementById('requestBillBtn');
+    if (!btn) return;
+    
+    if (activeOrderId && lastKnownStatus && ['preparing', 'ready', 'served'].includes(lastKnownStatus)) {
+      btn.classList.add('visible');
+      
+      // Check if already requested
+      if (localStorage.getItem('bill_requested_' + activeOrderId)) {
+        btn.innerHTML = '✅ Bill Requested — Waiter Notified!';
+        btn.classList.add('sent');
+        btn.disabled = true;
+      }
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+
+  // Run init on load
+  init();
+</script>
+
+<!-- REQUEST BILL BUTTON -->
+<button class="request-bill-btn" id="requestBillBtn" onclick="requestBill()">
+  💳 Request Bill from Waiter
+</button>
+
+<!-- FLOATING ORDER TRACKER BADGE -->
+<div class="floating-tracker-badge" id="orderTrackerBadge" onclick="openActiveOrderTracker()">
+  <div class="ftb-icon" id="ftbIcon">🍳</div>
+  <div class="ftb-text">
+    <div class="ftb-title">Order Status: <span id="ftbStatusText">Preparing</span></div>
+    <div class="ftb-subtitle">Track Order <span id="ftbOrderId">#1024</span></div>
+  </div>
+  <i data-feather="chevron-right" style="width:16px;height:16px; color:#fff;"></i>
+</div>
+
+</body>
+</html>

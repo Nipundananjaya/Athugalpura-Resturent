@@ -1,0 +1,2724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="supabase_helper.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waiter Dashboard - SmartServe</title>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Feather Icons -->
+<script src="https://unpkg.com/feather-icons"></script>
+
+<style>
+/* ===== PREMIUM CSS VARIABLES ===== */
+:root {
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-card: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #475569;
+  
+  --primary: #FF4B2B;
+  --primary-gradient: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+  --accent-blue: #06b6d4;
+  
+  --pending: #f59e0b;
+  --preparing: #3b82f6;
+  --ready: #10b981;
+  --served: #6366f1;
+  --cancelled: #ef4444;
+  
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  font-size: 28px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--ready);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--ready);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.live-time {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-gradient);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.logout-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ===== MAIN CONTENT ===== */
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  padding: 24px;
+  gap: 24px;
+  height: calc(100vh - 73px);
+  overflow: hidden;
+}
+
+/* ===== LEFT SECTION: TABLES MAP ===== */
+.left-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.new-order-trigger {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.new-order-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 75, 43, 0.4);
+}
+
+.tables-scroll {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.table-card {
+  aspect-ratio: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.table-card:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--text-muted);
+}
+
+.table-card .num {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.table-card .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Table states */
+.table-card.state-idle {
+  border-left: 4px solid var(--text-muted);
+}
+.table-card.state-pending {
+  border-left: 4px solid var(--pending);
+  background: rgba(245, 158, 11, 0.05);
+}
+.table-card.state-preparing {
+  border-left: 4px solid var(--preparing);
+  background: rgba(59, 130, 246, 0.05);
+}
+.table-card.state-ready {
+  border-left: 4px solid var(--ready);
+  background: rgba(16, 185, 129, 0.08);
+  animation: pulse-border 2s infinite ease-in-out;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.legend-section {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ===== RIGHT SECTION: ORDERS STREAM ===== */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+  background: rgba(255,255,255,0.05);
+}
+
+.tab-btn.active {
+  color: var(--text-main);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-count {
+  font-size: 11px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  padding: 2px 6px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.orders-stream {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  align-content: start;
+  padding-bottom: 40px;
+}
+
+.order-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--text-muted);
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.order-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.order-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.pending { background: rgba(245, 158, 11, 0.15); color: var(--pending); border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-badge.preparing { background: rgba(59, 130, 246, 0.15); color: var(--preparing); border: 1px solid rgba(59, 130, 246, 0.2); }
+.status-badge.ready { background: rgba(16, 185, 129, 0.15); color: var(--ready); border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-badge.served { background: rgba(99, 102, 241, 0.15); color: var(--served); border: 1px solid rgba(99, 102, 241, 0.2); }
+.status-badge.cancelled { background: rgba(239, 68, 68, 0.15); color: var(--cancelled); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.order-items-list {
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  padding: 12px 0;
+  margin: 12px 0;
+  flex: 1;
+}
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.order-item-row:last-child {
+  margin-bottom: 0;
+}
+
+.order-item-name {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.order-item-qty {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.order-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn.btn-serve {
+  background: var(--ready);
+  color: #0f172a;
+}
+.action-btn.btn-serve:hover {
+  background: #059669;
+}
+
+.action-btn.btn-cancel {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+.action-btn.btn-cancel:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.btn-receipt {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+.action-btn.btn-receipt:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--border);
+}
+
+/* ===== NEW ORDER MODAL ===== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  width: 90%;
+  max-width: 1100px;
+  height: 85vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  overflow: hidden;
+  transform: translateY(40px);
+  transition: transform 0.3s ease;
+}
+
+.modal-backdrop.active .modal-box {
+  transform: translateY(0);
+}
+
+/* Modal Menu side */
+.modal-menu-side {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.table-selector-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-select-dropdown {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.search-filter-bar {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.menu-search {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 10px 14px 10px 42px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.menu-search:focus {
+  border-color: var(--text-muted);
+}
+
+.category-tabs-scroll {
+  overflow-x: auto;
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-tab {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.cat-tab:hover {
+  color: var(--text-main);
+  background: rgba(255,255,255,0.1);
+}
+
+.cat-tab.active {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+}
+
+.menu-items-grid-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.menu-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.menu-item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.menu-item-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--text-muted);
+}
+
+.menu-item-img {
+  width: 100%;
+  aspect-ratio: 1.3;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--bg-surface);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.menu-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.menu-item-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ready);
+}
+
+.menu-item-card.sold-out {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.sold-out-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--cancelled);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Modal Cart side */
+.modal-cart-side {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cart-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-header h4 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cart-items-list {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.cart-item-details {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.cart-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cart-item-price {
+  font-size: 12px;
+  color: var(--ready);
+  font-weight: 700;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qty-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.qty-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.cart-item-qty {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 16px;
+  text-align: center;
+}
+
+.cart-item-delete {
+  color: #f87171;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.cart-checkout-section {
+  padding: 20px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+
+.checkout-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.checkout-summary-row.grand-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-bottom: 16px;
+}
+
+.btn-place-order {
+  width: 100%;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.btn-place-order:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 75, 43, 0.4);
+}
+
+.btn-place-order:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== RECEIPT POPUP MODAL ===== */
+.receipt-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 150;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.receipt-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.receipt-box {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  color: #333;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.receipt-logo {
+  text-align: center;
+  font-weight: 800;
+  font-size: 22px;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.receipt-title {
+  text-align: center;
+  font-size: 12px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.receipt-meta {
+  font-size: 12px;
+  border-bottom: 1px dashed #bbb;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.receipt-meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.receipt-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.receipt-totals {
+  border-top: 1px dashed #bbb;
+  padding-top: 10px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.receipt-totals-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.receipt-totals-row.grand-total {
+  font-size: 16px;
+  font-weight: bold;
+  border-top: 1px solid #333;
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+.receipt-footer {
+  text-align: center;
+  font-size: 11px;
+  margin-top: 24px;
+  border-top: 1px dashed #bbb;
+  padding-top: 12px;
+}
+
+.receipt-print-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.print-btn {
+  flex: 1;
+  padding: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+}
+
+.print-btn.btn-do-print {
+  background: var(--bg-main);
+  color: white;
+}
+
+.print-btn.btn-close-receipt {
+  background: #eee;
+  color: #333;
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: slideIn 0.3s forwards, slideOut 0.3s 2.7s forwards;
+}
+
+@keyframes slideIn {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  to { transform: translateY(-20px); opacity: 0; }
+}
+
+.toast.success { border-left: 4px solid var(--ready); }
+.toast.error { border-left: 4px solid var(--cancelled); }
+
+/* ===== COMPREHENSIVE RESPONSIVE DESIGN ===== */
+.mobile-view-tabs {
+  display: none;
+}
+
+.modal-back-to-menu-btn {
+  display: none;
+}
+
+.mobile-cart-toggle-bar {
+  display: none;
+}
+
+.mobile-close-modal-btn {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* For medium screens / tablets, stack modal columns slightly tighter */
+  .modal-box {
+    grid-template-columns: 1fr 320px;
+    height: 90vh;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Header mobile styling */
+  header {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+  .brand-logo {
+    font-size: 22px;
+  }
+  .brand-title {
+    display: none;
+  }
+  .live-time {
+    display: none;
+  }
+  .status-indicator span {
+    display: none;
+  }
+  .status-indicator {
+    padding: 6px;
+  }
+  #staff-name {
+    display: none;
+  }
+  .header-meta {
+    gap: 10px;
+  }
+  .logout-btn span {
+    display: none;
+  }
+  .logout-btn {
+    padding: 8px;
+  }
+
+  /* Main mobile view (Tabbed Interface to prevent scrolling long body) */
+  .mobile-view-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mobile-tab-btn {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 10px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .mobile-tab-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  main {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - 58px) !important; /* Lock height so content is contained */
+    padding: 12px !important;
+    gap: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .left-panel {
+    display: flex;
+    flex: 1;
+    height: 100% !important;
+    border-radius: var(--radius-md);
+  }
+  .right-panel {
+    display: none;
+    flex: 1;
+    height: 100% !important;
+  }
+
+  /* When orders tab is active */
+  main.show-orders .left-panel {
+    display: none;
+  }
+  main.show-orders .right-panel {
+    display: flex;
+  }
+
+  .tables-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .table-card .num {
+    font-size: 16px;
+  }
+  .table-card .label {
+    font-size: 9px;
+  }
+  .legend-section {
+    padding: 10px 12px;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Orders layout */
+  .tabs-container {
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    white-space: nowrap;
+  }
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .orders-stream {
+    grid-template-columns: 1fr; /* Single column on mobile */
+  }
+
+  /* NEW ORDER MODAL MOBILE LAYOUT */
+  .modal-box {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    width: 95%;
+    height: 94vh;
+    max-height: 94vh;
+    border-radius: var(--radius-md);
+  }
+
+  /* Show only one side at a time */
+  .modal-menu-side {
+    display: flex;
+    flex: 1;
+    border-right: none;
+    overflow: hidden;
+  }
+  .modal-cart-side {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Modal state triggers */
+  .modal-box.show-cart .modal-menu-side {
+    display: none;
+  }
+  .modal-box.show-cart .modal-cart-side {
+    display: flex;
+  }
+
+  .modal-back-to-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 6px;
+    margin-right: 8px;
+  }
+
+  .mobile-close-modal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-cart-toggle-bar {
+    display: block;
+    padding: 10px 16px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-cart-toggle-btn {
+    width: 100%;
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .menu-items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  
+  .menu-item-card {
+    padding: 8px;
+  }
+  .menu-item-img {
+    margin-bottom: 6px;
+  }
+  .menu-item-name {
+    font-size: 13px;
+  }
+  .menu-item-price {
+    font-size: 13px;
+  }
+}
+
+/* ===== TABLE BILL MODAL ===== */
+.bill-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 160;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.bill-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bill-box {
+  width: 95%;
+  max-width: 520px;
+  max-height: 85vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  transform: translateY(30px);
+  transition: transform 0.3s ease;
+}
+.bill-modal.active .bill-box {
+  transform: translateY(0);
+}
+.bill-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bill-header h3 {
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bill-close-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bill-session-info {
+  padding: 16px 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.bill-info-chip {
+  background: var(--bg-card);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.bill-info-chip strong {
+  color: var(--text-main);
+}
+.bill-order-section {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.bill-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.bill-order-header h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.bill-order-header .bill-order-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ready);
+}
+.bill-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.bill-grand-total {
+  padding: 20px 24px;
+  background: var(--bg-card);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+.bill-grand-total .amount {
+  color: var(--ready);
+}
+.bill-actions {
+  padding: 16px 24px;
+  display: flex;
+  gap: 10px;
+}
+.bill-action-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.bill-action-btn.btn-close-table {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 75, 43, 0.3);
+}
+.bill-action-btn.btn-close-table:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 75, 43, 0.4);
+}
+.bill-action-btn.btn-print-bill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+.bill-action-btn.btn-print-bill:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Bill request alert badge on table cards */
+.table-card .bill-alert {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 18px; height: 18px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s infinite;
+}
+
+/* Generate Bill button on order cards */
+.action-btn.btn-bill {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: var(--accent-blue);
+}
+.action-btn.btn-bill:hover {
+  background: rgba(6, 182, 212, 0.25);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-section">
+    <img src="logo.png" alt="Athugalpura Logo" style="height: 35px; border-radius: 4px;"/>
+    <div class="brand-logo" style="margin: 0; display: inline-block;">Athugalpura</div>
+    <div class="brand-title">Waiter Control Station</div>
+  </div>
+  
+  <div class="header-meta">
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      <span>Live Connection</span>
+    </div>
+    
+    <div class="live-time" id="clock">12:00:00 PM</div>
+    
+    <div class="profile-section">
+      <div class="avatar" id="staff-initials">WS</div>
+      <div style="font-weight:600;" id="staff-name">Waiter Staff</div>
+    </div>
+    
+    <a href="logout.php" class="logout-btn">
+      <i data-feather="log-out"></i>
+      <span>Logout</span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <!-- Mobile switcher tabs -->
+  <div class="mobile-view-tabs">
+    <button class="mobile-tab-btn active" onclick="switchMobileView('tables')">
+      <i data-feather="grid" style="width:16px; height:16px;"></i>
+      <span>Tables Map</span>
+    </button>
+    <button class="mobile-tab-btn" onclick="switchMobileView('orders')">
+      <i data-feather="list" style="width:16px; height:16px;"></i>
+      <span>Orders Stream</span>
+    </button>
+  </div>
+
+  <!-- LEFT: Table Map & Actions -->
+  <div class="left-panel">
+    <div class="panel-header">
+      <h2>Tables Overview</h2>
+      <button class="new-order-trigger" onclick="openNewOrderModal()">
+        <i data-feather="plus"></i>
+        <span>New Order</span>
+      </button>
+    </div>
+    
+    <div class="tables-scroll">
+      <div class="tables-grid" id="tables-container">
+        <!-- Generates 1 to 20 dynamically -->
+      </div>
+    </div>
+    
+    <div class="legend-section">
+      <div class="legend-item">
+        <div class="legend-dot" style="background-color: var(--text-muted)"></div>
+        <span>Idle</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background-color: var(--pending)"></div>
+        <span>Pending</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background-color: var(--preparing)"></div>
+        <span>Preparing</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background-color: var(--ready)"></div>
+        <span>Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Real-time Live Order Stream -->
+  <div class="right-panel">
+    <div class="tabs-container">
+      <button class="tab-btn active" onclick="switchTab('active', this)">
+        <span>Active Orders</span>
+        <span class="badge-count" id="count-active">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('ready', this)">
+        <span>Ready to Serve</span>
+        <span class="badge-count" id="count-ready" style="background: var(--ready); color: #0f172a;">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('served', this)">
+        <span>Recent Served</span>
+        <span class="badge-count" id="count-served">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('cancelled', this)">
+        <span>Cancelled</span>
+        <span class="badge-count" id="count-cancelled">0</span>
+      </button>
+    </div>
+    
+    <div class="orders-stream" id="orders-container">
+      <!-- Loaded dynamically via fetch -->
+    </div>
+  </div>
+</main>
+
+<!-- NEW ORDER MODAL -->
+<div class="modal-backdrop" id="new-order-modal">
+  <div class="modal-box">
+    <!-- Menu selection side -->
+    <div class="modal-menu-side">
+      <div class="modal-header">
+        <h3>Create Table Order</h3>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="table-selector-wrapper">
+            <span style="font-size:14px; font-weight:600; color: var(--text-muted)">Table:</span>
+            <select class="table-select-dropdown" id="modal-table-select">
+              <!-- 1 to 20 -->
+            </select>
+          </div>
+          <button class="qty-btn mobile-close-modal-btn" style="border:none;" onclick="closeNewOrderModal()"><i data-feather="x" style="width:18px; height:18px;"></i></button>
+        </div>
+      </div>
+      
+      <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+          <i data-feather="search"></i>
+          <input type="text" class="menu-search" id="menu-search-input" placeholder="Search menu items..." oninput="filterMenu()">
+        </div>
+      </div>
+      
+      <div class="category-tabs-scroll" id="modal-categories-container">
+        <!-- Categories loaded dynamically -->
+      </div>
+      
+      <div class="menu-items-grid-wrapper">
+        <div class="menu-items-grid" id="modal-menu-grid">
+          <!-- Menu cards loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- Mobile Cart Toggle Bar -->
+      <div class="mobile-cart-toggle-bar">
+        <button class="mobile-cart-toggle-btn" onclick="toggleModalCart(true)">
+          <i data-feather="shopping-cart" style="width:16px; height:16px;"></i>
+          <span>View Cart (<span id="mobile-cart-count">0</span>)</span>
+          <span style="margin-left: auto;" id="mobile-cart-total">Rs. 0.00</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Cart Summary side -->
+    <div class="modal-cart-side">
+      <div class="cart-header">
+        <button class="modal-back-to-menu-btn" onclick="toggleModalCart(false)"><i data-feather="arrow-left" style="width:18px; height:18px;"></i></button>
+        <h4>Order Cart</h4>
+        <button class="qty-btn" style="border:none;" onclick="closeNewOrderModal()"><i data-feather="x" style="width:18px; height:18px;"></i></button>
+      </div>
+      
+      <div class="cart-items-list" id="modal-cart-items">
+        <!-- Cart rows -->
+        <div class="empty-state" style="padding: 100px 0 0 0;">
+          <i data-feather="shopping-cart"></i>
+          <p style="margin-top: 10px;">Cart is empty.</p>
+        </div>
+      </div>
+      
+      <div class="cart-checkout-section">
+        <div class="checkout-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">Rs. 0.00</span>
+        </div>
+        <div class="checkout-summary-row">
+          <span>10% Service Charge & Tax</span>
+          <span id="cart-tax">Rs. 0.00</span>
+        </div>
+        <div class="checkout-summary-row grand-total">
+          <span>Grand Total</span>
+          <span id="cart-total">Rs. 0.00</span>
+        </div>
+        
+        <button class="btn-place-order" id="btn-submit-order" onclick="submitOrder()" disabled>
+          <i data-feather="send"></i>
+          <span>Send Order to Kitchen</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT POPUP -->
+<div class="receipt-modal" id="receipt-modal">
+  <div class="receipt-box" id="receipt-content">
+    <!-- Styled receipt fields will print/render here -->
+  </div>
+</div>
+
+<!-- TABLE BILL MODAL -->
+<div class="bill-modal" id="bill-modal">
+  <div class="bill-box" id="bill-content">
+    <!-- Loaded dynamically -->
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+let currentUser = null;
+let ordersList = [];
+let menuItems = [];
+let orderCart = [];
+let selectedTab = 'active'; // active, ready, served, cancelled
+let knownReadyOrders = new Set(); // To trigger chimes when orders move to 'ready'
+
+// Web Audio API Synth Chime for Ready alert
+function playReadyChime() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    
+    // Play double chime
+    const now = ctx.currentTime;
+    
+    const playNote = (freq, start, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      
+      // Smooth decay
+      gain.gain.setValueAtTime(0.3, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+    
+    playNote(523.25, now, 0.3); // C5
+    playNote(659.25, now + 0.15, 0.4); // E5
+  } catch(e) {
+    console.warn("Chime failed", e);
+  }
+}
+
+// Show Toast
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i data-feather="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i>
+    <span>${message}</span>
+  `;
+  container.appendChild(toast);
+  feather.replace();
+  
+  // Auto remove after 3s
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// Clock logic
+function initClock() {
+  const clockEl = document.getElementById('clock');
+  function update() {
+    const d = new Date();
+    clockEl.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+// Initialize tables grid (1 to 20)
+function renderTablesGrid() {
+  const container = document.getElementById('tables-container');
+  container.innerHTML = '';
+  
+  const modalSelect = document.getElementById('modal-table-select');
+  modalSelect.innerHTML = '';
+  
+  // Table state lookup map
+  const tableStateMap = {};
+  const tableBillRequested = {};
+  const tableSessionMap = {};
+  
+  // Determine table states from active orders
+  ordersList.forEach(o => {
+    if (['pending', 'preparing', 'ready'].includes(o.status)) {
+      const current = tableStateMap[o.table_number];
+      if (!current || o.status === 'ready' || (o.status === 'preparing' && current === 'pending')) {
+        tableStateMap[o.table_number] = o.status;
+      }
+      if (o.session_id) tableSessionMap[o.table_number] = o.session_id;
+      if (o.bill_requested) tableBillRequested[o.table_number] = true;
+    }
+  });
+  
+  for (let i = 1; i <= 20; i++) {
+    const state = tableStateMap[i] || 'idle';
+    const hasBillReq = tableBillRequested[i] || false;
+    
+    const card = document.createElement('div');
+    card.className = `table-card state-${state}`;
+    card.innerHTML = `
+      ${hasBillReq ? '<div class="bill-alert">💲</div>' : ''}
+      <span class="num">${i}</span>
+      <span class="label">${state.toUpperCase()}</span>
+    `;
+    
+    card.onclick = () => {
+      if (state === 'idle') {
+        openNewOrderModal(i);
+      } else {
+        showOrdersForTable(i);
+      }
+    };
+    
+    container.appendChild(card);
+    
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Table ${i}`;
+    modalSelect.appendChild(opt);
+  }
+}
+
+// Filter layout to specific table's active orders
+function showOrdersForTable(tableNum) {
+  selectedTab = 'active';
+  
+  // Highlight tab button
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('.tab-btn').classList.add('active');
+  
+  renderOrdersStream(tableNum);
+  showToast(`Filtering orders for Table ${tableNum}`, 'success');
+
+  // Automatically switch to orders tab on mobile screens
+  if (window.innerWidth <= 768) {
+    switchMobileView('orders');
+  }
+}
+
+// Load data
+function loadDashboardData() {
+  fetch('waiter_api.php?action=fetch_orders')
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        const prevReadyCount = ordersList.filter(o => o.status === 'ready').length;
+        ordersList = res.data;
+        
+        // Count statuses
+        const activeCount = ordersList.filter(o => ['pending', 'preparing', 'ready'].includes(o.status)).length;
+        const readyCount = ordersList.filter(o => o.status === 'ready').length;
+        const servedCount = ordersList.filter(o => o.status === 'served').length;
+        const cancelledCount = ordersList.filter(o => o.status === 'cancelled').length;
+        
+        document.getElementById('count-active').textContent = activeCount;
+        document.getElementById('count-ready').textContent = readyCount;
+        document.getElementById('count-served').textContent = servedCount;
+        document.getElementById('count-cancelled').textContent = cancelledCount;
+        
+        // Sound notification for new ready orders
+        ordersList.forEach(o => {
+          if (o.status === 'ready' && !knownReadyOrders.has(o.order_id)) {
+            knownReadyOrders.add(o.order_id);
+            playReadyChime();
+            showToast(`Table ${o.table_number} food is READY!`, 'success');
+          }
+        });
+        
+        // Render
+        renderTablesGrid();
+        renderOrdersStream();
+      }
+    })
+    .catch(err => console.error("Error loading dashboard data:", err));
+}
+
+// Switch tabs
+function switchTab(tab, btn) {
+  selectedTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrdersStream();
+}
+
+// Render Orders Stream
+function renderOrdersStream(tableFilter = null) {
+  const container = document.getElementById('orders-container');
+  container.innerHTML = '';
+  
+  let filtered = [];
+  if (tableFilter) {
+    filtered = ordersList.filter(o => o.table_number === tableFilter && ['pending', 'preparing', 'ready'].includes(o.status));
+  } else {
+    if (selectedTab === 'active') {
+      filtered = ordersList.filter(o => ['pending', 'preparing', 'ready'].includes(o.status));
+    } else {
+      filtered = ordersList.filter(o => o.status === selectedTab);
+    }
+  }
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i data-feather="inbox"></i>
+        <p style="margin-top: 10px;">No orders found in this section.</p>
+      </div>
+    `;
+    feather.replace();
+    return;
+  }
+  
+  filtered.forEach(o => {
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    
+    // Format items list
+    let itemsHtml = '';
+    o.items.forEach(it => {
+      itemsHtml += `
+        <div class="order-item-row">
+          <span class="order-item-name"><span class="order-item-qty">${it.quantity}x</span> ${it.item_name}</span>
+          <span>Rs. ${it.subtotal.toFixed(2)}</span>
+        </div>
+      `;
+    });
+    
+    // Format action buttons
+    let actionButtons = '';
+    if (o.status === 'ready') {
+      actionButtons += `
+        <button class="action-btn btn-serve" onclick="updateOrderStatus(${o.order_id}, 'served')">
+          <i data-feather="check"></i> Mark Served
+        </button>
+      `;
+    }
+    if (o.status === 'pending') {
+      actionButtons += `
+        <button class="action-btn btn-cancel" onclick="updateOrderStatus(${o.order_id}, 'cancelled')">
+          <i data-feather="slash"></i> Cancel Order
+        </button>
+      `;
+    }
+    
+    // Receipt Button
+    if (o.status !== 'cancelled') {
+      actionButtons += `
+        <button class="action-btn btn-receipt" onclick="viewReceipt(${o.order_id})">
+          <i data-feather="file-text"></i> Receipt
+        </button>
+      `;
+    }
+
+    // Generate Table Bill button (only for orders with sessions)
+    if (o.session_id && ['pending', 'preparing', 'ready', 'served'].includes(o.status)) {
+      actionButtons += `
+        <button class="action-btn btn-bill" onclick="openTableBill(${o.table_number})">
+          <i data-feather="credit-card"></i> Table Bill
+        </button>
+      `;
+    }
+    
+    const timeFormatted = new Date(o.order_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    card.innerHTML = `
+      <div>
+        <div class="order-card-header">
+          <div>
+            <div class="order-title">Table ${o.table_number}</div>
+            <div class="order-meta">Order #${o.order_id} &bull; ${timeFormatted}</div>
+          </div>
+          <div>
+            <span class="status-badge ${o.status}">${o.status.toUpperCase()}</span>
+            ${o.bill_requested ? '<div style="font-size:11px; color:#ef4444; font-weight:700; margin-top:4px;">💲 Bill Requested</div>' : ''}
+          </div>
+        </div>
+        
+        <div class="order-items-list">
+          ${itemsHtml}
+        </div>
+      </div>
+      
+      <div>
+        <div class="order-total-row">
+          <span>Total (incl. tax)</span>
+          <span>Rs. ${o.total_amount.toFixed(2)}</span>
+        </div>
+        
+        <div class="order-actions">
+          ${actionButtons}
+        </div>
+      </div>
+    `;
+    
+    container.appendChild(card);
+  });
+  
+  feather.replace();
+}
+
+// Update Order Status via API
+function updateOrderStatus(orderId, status) {
+  if (status === 'cancelled' && !confirm(`Are you sure you want to cancel Order #${orderId}?`)) {
+    return;
+  }
+  
+  fetch('waiter_api.php?action=update_status', {
+    method: 'POST',
+    headers: { 'Content-Type:': 'application/json' },
+    body: JSON.stringify({ order_id: orderId, status: status })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        showToast(`Order status updated successfully!`, 'success');
+        loadDashboardData();
+      } else {
+        showToast(res.message || 'Failed to update order status.', 'error');
+      }
+    })
+    .catch(err => {
+      showToast('API communication failed.', 'error');
+      console.error(err);
+    });
+}
+
+// Fetch Menu Items
+function loadMenuItems() {
+  fetch('menu_api.php?action=fetch')
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        menuItems = res.data;
+        renderCategoryTabs();
+        renderMenuGrid();
+      }
+    })
+    .catch(err => console.error("Error loading menu:", err));
+}
+
+// Categories dynamic tab builder
+let selectedCategory = 'ALL';
+function renderCategoryTabs() {
+  const container = document.getElementById('modal-categories-container');
+  container.innerHTML = '';
+  
+  // Extract unique categories
+  const categories = ['ALL'];
+  menuItems.forEach(it => {
+    if (it.category && !categories.includes(it.category)) {
+      categories.push(it.category);
+    }
+  });
+  
+  categories.forEach(cat => {
+    const tab = document.createElement('div');
+    tab.className = `cat-tab ${selectedCategory === cat ? 'active' : ''}`;
+    tab.textContent = cat;
+    tab.onclick = () => {
+      selectedCategory = cat;
+      renderCategoryTabs();
+      renderMenuGrid();
+    };
+    container.appendChild(tab);
+  });
+}
+
+// Render Menu Cards in Order Modal
+function renderMenuGrid(searchQuery = '') {
+  const container = document.getElementById('modal-menu-grid');
+  container.innerHTML = '';
+  
+  let filtered = menuItems;
+  
+  // Category Filter
+  if (selectedCategory !== 'ALL') {
+    filtered = filtered.filter(it => it.category === selectedCategory);
+  }
+  
+  // Search Filter
+  if (searchQuery.trim() !== '') {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(it => it.name.toLowerCase().includes(q) || (it.description && it.description.toLowerCase().includes(q)));
+  }
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1/-1;">
+        <i data-feather="frown"></i>
+        <p style="margin-top: 10px;">No matching menu items found.</p>
+      </div>
+    `;
+    feather.replace();
+    return;
+  }
+  
+  filtered.forEach(it => {
+    const card = document.createElement('div');
+    const isAvailable = parseInt(it.is_available) === 1;
+    card.className = `menu-item-card ${isAvailable ? '' : 'sold-out'}`;
+    
+    let imgHtml = '';
+    if (it.image_path) {
+      imgHtml = `<img src="${it.image_path}" class="menu-item-img" alt="${it.name}">`;
+    } else {
+      // Get initials
+      const init = it.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      imgHtml = `<div class="menu-item-img">${init}</div>`;
+    }
+    
+    card.innerHTML = `
+      ${imgHtml}
+      ${!isAvailable ? '<span class="sold-out-badge">Sold Out</span>' : ''}
+      <div>
+        <div class="menu-item-name">${it.name}</div>
+        <div class="menu-item-price">Rs. ${parseFloat(it.price).toFixed(2)}</div>
+      </div>
+    `;
+    
+    if (isAvailable) {
+      card.onclick = () => addToCart(it);
+    }
+    
+    container.appendChild(card);
+  });
+}
+
+// Filter menu items on input change
+function filterMenu() {
+  const val = document.getElementById('menu-search-input').value;
+  renderMenuGrid(val);
+}
+
+// Add Item to Order Cart
+function addToCart(item) {
+  const existing = orderCart.find(c => c.id === item.id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    orderCart.push({
+      id: item.id,
+      name: item.name,
+      price: parseFloat(item.price),
+      qty: 1
+    });
+  }
+  renderCart();
+}
+
+// Update quantity in Cart
+function updateCartQty(itemId, amt) {
+  const index = orderCart.findIndex(c => c.id === itemId);
+  if (index !== -1) {
+    orderCart[index].qty += amt;
+    if (orderCart[index].qty <= 0) {
+      orderCart.splice(index, 1);
+    }
+    renderCart();
+  }
+}
+
+// Remove from cart
+function removeFromCart(itemId) {
+  orderCart = orderCart.filter(c => c.id !== itemId);
+  renderCart();
+}
+
+// Render cart side of modal
+function renderCart() {
+  const container = document.getElementById('modal-cart-items');
+  container.innerHTML = '';
+  
+  const mobileCountEl = document.getElementById('mobile-cart-count');
+  const mobileTotalEl = document.getElementById('mobile-cart-total');
+
+  if (orderCart.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 100px 0 0 0;">
+        <i data-feather="shopping-cart"></i>
+        <p style="margin-top: 10px;">Cart is empty.</p>
+      </div>
+    `;
+    document.getElementById('cart-subtotal').textContent = 'Rs. 0.00';
+    document.getElementById('cart-tax').textContent = 'Rs. 0.00';
+    document.getElementById('cart-total').textContent = 'Rs. 0.00';
+    document.getElementById('btn-submit-order').disabled = true;
+    
+    if (mobileCountEl) mobileCountEl.textContent = '0';
+    if (mobileTotalEl) mobileTotalEl.textContent = 'Rs. 0.00';
+    
+    feather.replace();
+    return;
+  }
+  
+  let subtotal = 0;
+  let totalQty = 0;
+  
+  orderCart.forEach(c => {
+    const itemSub = c.price * c.qty;
+    subtotal += itemSub;
+    totalQty += c.qty;
+    
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+    row.innerHTML = `
+      <div class="cart-item-details">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-price">Rs. ${c.price.toFixed(2)}</div>
+      </div>
+      
+      <div class="cart-item-actions">
+        <button class="qty-btn" onclick="updateCartQty(${c.id}, -1)">-</button>
+        <span class="cart-item-qty">${c.qty}</span>
+        <button class="qty-btn" onclick="updateCartQty(${c.id}, 1)">+</button>
+        
+        <button class="cart-item-delete" onclick="removeFromCart(${c.id})">
+          <i data-feather="trash-2" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+  
+  const tax = subtotal * 0.10;
+  const total = subtotal + tax;
+  
+  document.getElementById('cart-subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
+  document.getElementById('cart-tax').textContent = `Rs. ${tax.toFixed(2)}`;
+  document.getElementById('cart-total').textContent = `Rs. ${total.toFixed(2)}`;
+  document.getElementById('btn-submit-order').disabled = false;
+  
+  if (mobileCountEl) mobileCountEl.textContent = totalQty;
+  if (mobileTotalEl) mobileTotalEl.textContent = `Rs. ${total.toFixed(2)}`;
+  
+  feather.replace();
+}
+
+// Modal Toggle open
+function openNewOrderModal(defaultTable = 1) {
+  document.getElementById('modal-table-select').value = defaultTable;
+  document.getElementById('new-order-modal').classList.add('active');
+  
+  // Reset modal cart view back to menu on open
+  const modalBox = document.querySelector('.modal-box');
+  if (modalBox) modalBox.classList.remove('show-cart');
+  
+  orderCart = [];
+  renderCart();
+  loadMenuItems();
+}
+
+// Modal Toggle close
+function closeNewOrderModal() {
+  document.getElementById('new-order-modal').classList.remove('active');
+}
+
+/**
+ * English: Switches the active view tab on mobile screens (Tables vs Orders).
+ * Sinhala: ජංගම තිරවල සක්‍රිය දර්ශන ටැබය මාරු කරයි (Tables vs Orders).
+ */
+function switchMobileView(view) {
+  const mainEl = document.querySelector('main');
+  const tabs = document.querySelectorAll('.mobile-tab-btn');
+  if (view === 'tables') {
+    mainEl.classList.remove('show-orders');
+    tabs[0].classList.add('active');
+    tabs[1].classList.remove('active');
+  } else {
+    mainEl.classList.add('show-orders');
+    tabs[0].classList.remove('active');
+    tabs[1].classList.add('active');
+  }
+}
+
+/**
+ * English: Toggles the mobile modal view between Menu and Cart.
+ * Sinhala: Modal එක තුළ Menu සහ Cart අතර මාරු කරයි.
+ */
+function toggleModalCart(show) {
+  const modalBox = document.querySelector('.modal-box');
+  if (modalBox) {
+    if (show) {
+      modalBox.classList.add('show-cart');
+    } else {
+      modalBox.classList.remove('show-cart');
+    }
+  }
+  feather.replace();
+}
+
+// Place Order via API call
+function submitOrder() {
+  const tableSelect = document.getElementById('modal-table-select');
+  const tableNumber = parseInt(tableSelect.value);
+  
+  if (orderCart.length === 0) {
+    showToast('Add items to order first!', 'error');
+    return;
+  }
+  
+  const submitBtn = document.getElementById('btn-submit-order');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<i data-feather="loader" class="feather-spin"></i> Placing Order...`;
+  feather.replace();
+  
+  fetch('order_api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      table_number: tableNumber,
+      items: orderCart
+    })
+  })
+    .then(r => r.json())
+    .then(res => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i data-feather="send"></i> Send Order to Kitchen`;
+      feather.replace();
+      
+      if (res.success) {
+        showToast(`Order #${res.order_id} placed successfully!`, 'success');
+        closeNewOrderModal();
+        loadDashboardData();
+      } else {
+        showToast(res.message || 'Failed to place order.', 'error');
+      }
+    })
+    .catch(err => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i data-feather="send"></i> Send Order to Kitchen`;
+      feather.replace();
+      
+      showToast('Connection error, please try again.', 'error');
+      console.error(err);
+    });
+}
+
+// View Receipt details
+function viewReceipt(orderId) {
+  const order = ordersList.find(o => o.order_id === orderId);
+  if (!order) return;
+  
+  const content = document.getElementById('receipt-content');
+  
+  let itemsHtml = '';
+  let subtotal = 0;
+  order.items.forEach(it => {
+    const itemSub = it.price * it.quantity;
+    subtotal += itemSub;
+    itemsHtml += `
+      <div class="receipt-item-row">
+        <span>${it.item_name} x${it.quantity}</span>
+        <span>Rs. ${itemSub.toFixed(2)}</span>
+      </div>
+    `;
+  });
+  
+  const tax = subtotal * 0.10;
+  const timeFormatted = new Date(order.order_date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+  
+  content.innerHTML = `
+    <div class="receipt-logo">Athugalpura Rest</div>
+    <div class="receipt-title">Order Receipt</div>
+    
+    <div class="receipt-meta">
+      <div class="receipt-meta-row">
+        <span>Order #:</span>
+        <span>${order.order_id}</span>
+      </div>
+      <div class="receipt-meta-row">
+        <span>Table Number:</span>
+        <span>Table ${order.table_number}</span>
+      </div>
+      <div class="receipt-meta-row">
+        <span>Date & Time:</span>
+        <span>${timeFormatted}</span>
+      </div>
+      <div class="receipt-meta-row">
+        <span>Status:</span>
+        <span style="font-weight: bold; text-transform: uppercase;">${order.status}</span>
+      </div>
+    </div>
+    
+    <div>
+      ${itemsHtml}
+    </div>
+    
+    <div class="receipt-totals">
+      <div class="receipt-totals-row">
+        <span>Subtotal:</span>
+        <span>Rs. ${subtotal.toFixed(2)}</span>
+      </div>
+      <div class="receipt-totals-row">
+        <span>Service & Tax (10%):</span>
+        <span>Rs. ${tax.toFixed(2)}</span>
+      </div>
+      <div class="receipt-totals-row grand-total">
+        <span>TOTAL AMOUNT:</span>
+        <span>Rs. ${order.total_amount.toFixed(2)}</span>
+      </div>
+    </div>
+    
+    <div class="receipt-footer">
+      Thank you for dining with us!<br>
+      Please pay at the cash counter.<br>
+      SmartServe System v1.1
+    </div>
+    
+    <div class="receipt-print-actions">
+      <button class="print-btn btn-do-print" onclick="window.print()">Print</button>
+      <button class="print-btn btn-close-receipt" onclick="closeReceipt()">Close</button>
+    </div>
+  `;
+  
+  document.getElementById('receipt-modal').classList.add('active');
+}
+
+function closeReceipt() {
+  document.getElementById('receipt-modal').classList.remove('active');
+}
+
+// Session Validation
+function checkSession() {
+  fetch('check_session.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.logged_in || (data.role !== 'waiter' && data.role !== 'admin')) {
+        window.location.href = 'index.html';
+      } else {
+        document.getElementById('staff-name').textContent = data.username;
+        document.getElementById('staff-initials').textContent = data.username.substring(0, 2).toUpperCase();
+        
+        currentUser = data;
+        
+        // Start live feeds
+        initClock();
+        loadDashboardData();
+        
+        // Set polling
+        setInterval(loadDashboardData, 3000);
+      }
+    })
+    .catch(() => {
+      console.warn("Session check API failed. Operating in sandbox/demo mode.");
+      initClock();
+      loadDashboardData();
+      setInterval(loadDashboardData, 3000);
+    });
+}
+
+// Window load
+window.onload = () => {
+  feather.replace();
+  checkSession();
+};
+// ===== TABLE BILL MANAGEMENT =====
+function openTableBill(tableNumber) {
+  const modal = document.getElementById('bill-modal');
+  const content = document.getElementById('bill-content');
+  
+  content.innerHTML = `
+    <div style="padding: 60px; text-align: center; color: var(--text-muted);">
+      <i data-feather="loader" style="width:36px;height:36px;animation:spin 1s linear infinite;"></i>
+      <p style="margin-top: 12px;">Loading bill...</p>
+    </div>
+  `;
+  modal.classList.add('active');
+  feather.replace();
+  
+  fetch(`session_api.php?action=get_table_bill&table_number=${tableNumber}`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        renderBillModal(res);
+      } else {
+        content.innerHTML = `
+          <div style="padding: 40px; text-align: center;">
+            <p style="color: var(--cancelled);">${res.message || 'No active session found.'}</p>
+            <button class="bill-action-btn btn-print-bill" style="margin-top:16px;display:inline-flex;" onclick="closeBillModal()">Close</button>
+          </div>
+        `;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      content.innerHTML = `<div style="padding:40px;text-align:center;color:var(--cancelled);">Connection error.</div>`;
+    });
+}
+
+function renderBillModal(data) {
+  const content = document.getElementById('bill-content');
+  
+  let ordersHtml = '';
+  data.orders.forEach(order => {
+    let itemsHtml = '';
+    order.items.forEach(item => {
+      itemsHtml += `
+        <div class="bill-item-row">
+          <span>${item.item_name} x${item.quantity}</span>
+          <span>Rs. ${item.subtotal.toFixed(2)}</span>
+        </div>
+      `;
+    });
+    
+    const tokenLabel = order.customer_token && order.customer_token !== 'Staff Order' 
+      ? `Guest ${order.customer_token.substring(0, 8)}` 
+      : 'Staff Order';
+    
+    ordersHtml += `
+      <div class="bill-order-section">
+        <div class="bill-order-header" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <h4>Order #${order.order_id} — ${tokenLabel}</h4>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="bill-order-total" style="font-weight:700; color:var(--ready); margin-right:4px;">Rs. ${order.total_amount.toFixed(2)}</span>
+            <button class="action-btn btn-print-bill" style="padding:6px 10px; font-size:11px; margin:0; border-radius:6px; height:auto; width:auto; display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-main);" onclick="printSingleOrder(${order.order_id}, ${data.table_number})">
+              <i data-feather="printer" style="width:12px; height:12px;"></i> Print Single
+            </button>
+          </div>
+        </div>
+        <div style="margin-top: 8px;">
+          ${itemsHtml}
+        </div>
+      </div>
+    `;
+  });
+  
+  content.innerHTML = `
+    <div class="bill-header">
+      <h3>🧾 Table ${data.table_number} Bill</h3>
+      <button class="bill-close-btn" onclick="closeBillModal()"><i data-feather="x" style="width:16px;height:16px;"></i></button>
+    </div>
+    
+    <div class="bill-session-info">
+      <div class="bill-info-chip">Session: <strong>#${data.session_id}</strong></div>
+      <div class="bill-info-chip">Orders: <strong>${data.order_count}</strong></div>
+      <div class="bill-info-chip">Since: <strong>${new Date(data.opened_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong></div>
+      ${data.bill_requested ? '<div class="bill-info-chip" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#f87171;">💲 Bill Requested by Customer</div>' : ''}
+    </div>
+    
+    ${ordersHtml}
+    
+    <div class="bill-grand-total">
+      <span>Grand Total</span>
+      <span class="amount">Rs. ${data.grand_total.toFixed(2)}</span>
+    </div>
+    
+    <div class="bill-actions">
+      <button class="bill-action-btn btn-print-bill" onclick="printTableBill(${data.table_number})">
+        <i data-feather="printer" style="width:16px;height:16px;"></i>
+        Print Bill
+      </button>
+      <button class="bill-action-btn btn-close-table" onclick="closeTableSession(${data.session_id}, ${data.table_number})">
+        <i data-feather="check-circle" style="width:16px;height:16px;"></i>
+        Close Table
+      </button>
+    </div>
+  `;
+  feather.replace();
+}
+
+function closeBillModal() {
+  document.getElementById('bill-modal').classList.remove('active');
+}
+
+function closeTableSession(sessionId, tableNumber) {
+  if (!confirm(`Close Table ${tableNumber}? This will mark all orders as served and free the table.`)) return;
+  
+  fetch('session_api.php?action=close_session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        showToast(`Table ${tableNumber} closed successfully!`, 'success');
+        closeBillModal();
+        loadDashboardData();
+      } else {
+        showToast(res.message || 'Failed to close table.', 'error');
+      }
+    })
+    .catch(err => {
+      showToast('Connection error.', 'error');
+      console.error(err);
+    });
+}
+
+function printTableBill(tableNumber) {
+  const billContent = document.getElementById('bill-content').cloneNode(true);
+  // Remove action buttons for print
+  const actions = billContent.querySelector('.bill-actions');
+  if (actions) actions.remove();
+  
+  const printWin = window.open('', '_blank', 'width=400,height=600');
+  printWin.document.write(`
+    <html>
+    <head><title>Table ${tableNumber} Bill</title>
+    <style>
+      body { font-family: 'Courier New', monospace; padding: 20px; color: #333; }
+      .bill-header { text-align: center; border-bottom: 2px dashed #999; padding-bottom: 10px; margin-bottom: 10px; }
+      .bill-header h3 { font-size: 18px; }
+      .bill-session-info { margin-bottom: 10px; font-size: 12px; }
+      .bill-info-chip { display: inline-block; margin: 2px 4px; }
+      .bill-order-section { border-bottom: 1px dashed #ccc; padding: 8px 0; }
+      .bill-order-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 6px; }
+      .bill-item-row { display: flex; justify-content: space-between; font-size: 13px; margin: 3px 0; }
+      .bill-grand-total { font-size: 18px; font-weight: bold; text-align: right; border-top: 2px solid #333; padding-top: 10px; margin-top: 10px; }
+      .bill-close-btn { display: none; }
+    </style>
+    </head>
+    <body>
+      <div style="text-align:center;font-weight:bold;font-size:20px;margin-bottom:4px;">Athugalpura Rest</div>
+      <div style="text-align:center;font-size:12px;margin-bottom:16px;">Table Bill</div>
+      ${billContent.innerHTML}
+      <div style="text-align:center;font-size:11px;margin-top:20px;border-top:1px dashed #999;padding-top:10px;">
+        Thank you for dining with us!<br>SmartServe System v1.2
+      </div>
+    </body>
+    </html>
+  `);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 300);
+}
+
+function printSingleOrder(orderId, tableNumber) {
+  const order = ordersList.find(o => o.order_id === orderId);
+  if (!order) {
+    showToast("Order details not found.", "error");
+    return;
+  }
+  
+  let itemsHtml = '';
+  let subtotal = 0;
+  order.items.forEach(it => {
+    const itemSub = it.price * it.quantity;
+    subtotal += itemSub;
+    itemsHtml += `
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin:3px 0;">
+        <span>${it.item_name} x${it.quantity}</span>
+        <span>Rs. ${itemSub.toFixed(2)}</span>
+      </div>
+    `;
+  });
+  
+  const tax = subtotal * 0.10;
+  const timeFormatted = new Date(order.order_date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+  const tokenLabel = order.customer_token && order.customer_token !== 'Staff Order'
+    ? `Guest ${order.customer_token.substring(0, 8)}`
+    : 'Staff Order';
+
+  const printWin = window.open('', '_blank', 'width=400,height=600');
+  printWin.document.write(`
+    <html>
+    <head><title>Order #${orderId} Bill</title>
+    <style>
+      body { font-family: 'Courier New', monospace; padding: 20px; color: #333; }
+      .receipt-logo { text-align: center; font-weight: bold; font-size: 20px; margin-bottom: 4px; }
+      .receipt-title { text-align: center; font-size: 12px; margin-bottom: 16px; text-transform: uppercase; }
+      .receipt-meta { font-size: 12px; border-bottom: 2px dashed #999; padding-bottom: 10px; margin-bottom: 10px; }
+      .receipt-meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      .receipt-totals { border-top: 2px dashed #999; padding-top: 10px; margin-top: 10px; font-size: 13px; }
+      .receipt-totals-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      .receipt-totals-row.grand-total { font-size: 16px; font-weight: bold; border-top: 1px solid #333; padding-top: 6px; margin-top: 6px; }
+      .receipt-footer { text-align: center; font-size: 11px; margin-top: 20px; border-top: 1px dashed #999; padding-top: 10px; }
+    </style>
+    </head>
+    <body>
+      <div class="receipt-logo">Athugalpura Rest</div>
+      <div class="receipt-title">Order Receipt (${tokenLabel})</div>
+      
+      <div class="receipt-meta">
+        <div class="receipt-meta-row">
+          <span>Order #:</span>
+          <span>${order.order_id}</span>
+        </div>
+        <div class="receipt-meta-row">
+          <span>Table Number:</span>
+          <span>Table ${order.table_number}</span>
+        </div>
+        <div class="receipt-meta-row">
+          <span>Date & Time:</span>
+          <span>${timeFormatted}</span>
+        </div>
+      </div>
+      
+      <div>
+        ${itemsHtml}
+      </div>
+      
+      <div class="receipt-totals">
+        <div class="receipt-totals-row">
+          <span>Subtotal:</span>
+          <span>Rs. ${subtotal.toFixed(2)}</span>
+        </div>
+        <div class="receipt-totals-row">
+          <span>Service & Tax (10%):</span>
+          <span>Rs. ${tax.toFixed(2)}</span>
+        </div>
+        <div class="receipt-totals-row grand-total">
+          <span>TOTAL AMOUNT:</span>
+          <span>Rs. ${order.total_amount.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <div class="receipt-footer">
+        Thank you for dining with us!<br>
+        Please pay at the cash counter.<br>
+        SmartServe System v1.2
+      </div>
+    </body>
+    </html>
+  `);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 300);
+}
+</script>
+
+</body>
+</html>

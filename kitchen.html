@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="supabase_helper.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen Dashboard - SmartServe</title>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Feather Icons -->
+<script src="https://unpkg.com/feather-icons"></script>
+
+<style>
+/* ===== PREMIUM CSS VARIABLES ===== */
+:root {
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-card: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #475569;
+  
+  --primary: #FF4B2B;
+  --primary-gradient: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+  
+  --pending: #f59e0b;
+  --preparing: #3b82f6;
+  --ready: #10b981;
+  
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  font-size: 28px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--ready);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--ready);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.live-time {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-gradient);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 75, 43, 0.1);
+  color: #ff4b2b;
+  border-color: rgba(255, 75, 43, 0.4);
+}
+
+/* ===== MAIN KANBAN BOARD ===== */
+.board-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 24px;
+  overflow: hidden;
+  height: calc(100vh - 73px);
+}
+
+.board-column {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  min-height: 0;
+  box-shadow: var(--shadow-md);
+}
+
+.column-header {
+  padding: 20px 24px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.column-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.column-count {
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+/* Column Header Specific Indicators */
+.col-pending { color: var(--pending); }
+.col-pending-header { border-bottom-color: var(--pending); }
+
+.col-preparing { color: var(--preparing); }
+.col-preparing-header { border-bottom-color: var(--preparing); }
+
+.col-ready { color: var(--ready); }
+.col-ready-header { border-bottom-color: var(--ready); }
+
+.column-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.column-content::-webkit-scrollbar {
+  width: 6px;
+}
+.column-content::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 10px;
+}
+
+/* Empty Column State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  height: 200px;
+  text-align: center;
+  gap: 12px;
+}
+
+.empty-state i {
+  stroke-width: 1.5;
+  color: var(--border);
+}
+
+.empty-state p {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ===== ORDER CARD ===== */
+.order-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: cardEntry 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes cardEntry {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--text-muted);
+}
+
+/* Overdue Warning Pulse */
+.order-card.overdue {
+  border-color: #ef4444;
+  animation: overduePulse 2s infinite alternate;
+}
+
+@keyframes overduePulse {
+  0% { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1); }
+  100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); }
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 10px;
+}
+
+.table-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  background: var(--bg-main);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.order-info {
+  text-align: right;
+}
+
+.order-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.elapsed-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pending);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.elapsed-time.late {
+  color: #ef4444;
+}
+
+/* Card Items List */
+.items-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.item-qty {
+  font-size: 14px;
+  font-weight: 800;
+  background: var(--bg-main);
+  color: var(--primary);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 75, 43, 0.2);
+}
+
+.item-name {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  transition: all 0.2s;
+}
+
+/* Strike-through checklist feature for chefs */
+.item-checkbox {
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+.item-row.checked .item-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+.item-row.checked .item-qty {
+  opacity: 0.5;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* Card Action Button */
+.action-btn {
+  width: 100%;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-accept {
+  background: var(--primary-gradient);
+}
+.btn-accept:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 14px rgba(255, 75, 43, 0.3);
+}
+
+.btn-complete {
+  background: var(--preparing);
+}
+.btn-complete:hover {
+  background: #2563eb;
+  box-shadow: 0 6px 14px rgba(59, 130, 246, 0.3);
+}
+
+.btn-serve {
+  background: var(--ready);
+}
+.btn-serve:hover {
+  background: #059669;
+  box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
+}
+/* ===== TABLE SESSION GROUP BANNER ===== */
+.table-group-banner {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.table-group-banner .tgb-table {
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: 14px;
+}
+.table-group-banner .tgb-count {
+  background: var(--primary-gradient);
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand-section">
+      <img src="logo.png" alt="Athugalpura Logo" style="height: 35px; border-radius: 4px;"/>
+      <h1 class="brand-logo" style="margin: 0; display: inline-block;">Athugalpura</h1>
+      <span class="brand-title">KITCHEN MONITOR</span>
+    </div>
+    
+    <div class="header-meta">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span id="connection-status">Live Monitoring</span>
+      </div>
+      <div class="live-time" id="live-clock">--:--:-- --</div>
+      <div class="profile-section">
+        <div class="avatar" id="staff-initials">KT</div>
+        <span style="font-weight: 600;" id="staff-name">Kitchen Staff</span>
+      </div>
+      <a href="logout.php" class="logout-btn">
+        <i data-feather="log-out" style="width:14px;height:14px;"></i>
+        Logout
+      </a>
+    </div>
+  </header>
+
+  <!-- KANBAN BOARD -->
+  <div class="board-container">
+    
+    <!-- COLUMN 1: NEW ORDERS -->
+    <div class="board-column col-pending">
+      <div class="column-header col-pending-header">
+        <div class="column-title">
+          <i data-feather="bell" style="width:18px;height:18px;"></i>
+          <span>New Orders</span>
+        </div>
+        <span class="column-count" id="count-pending">0</span>
+      </div>
+      <div class="column-content" id="list-pending">
+        <!-- Filled via JS -->
+      </div>
+    </div>
+
+    <!-- COLUMN 2: IN PREPARATION -->
+    <div class="board-column col-preparing">
+      <div class="column-header col-preparing-header">
+        <div class="column-title">
+          <i data-feather="flame" style="width:18px;height:18px;"></i>
+          <span>Preparing</span>
+        </div>
+        <span class="column-count" id="count-preparing">0</span>
+      </div>
+      <div class="column-content" id="list-preparing">
+        <!-- Filled via JS -->
+      </div>
+    </div>
+
+    <!-- COLUMN 3: READY TO SERVE -->
+    <div class="board-column col-ready">
+      <div class="column-header col-ready-header">
+        <div class="column-title">
+          <i data-feather="check-circle" style="width:18px;height:18px;"></i>
+          <span>Ready to Serve</span>
+        </div>
+        <span class="column-count" id="count-ready">0</span>
+      </div>
+      <div class="column-content" id="list-ready">
+        <!-- Filled via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    /* ===== STATE ===== */
+    let activeOrders = [];
+    let knownOrderIds = new Set();
+    let isInitialLoad = true;
+
+    /* ===== WEB AUDIO SOUND SYNTHESIZER ===== */
+    /**
+     * English: Generates and plays a custom audio chime (synthesized "ding-dong" tone) using the Web Audio API to alert kitchen staff about new orders.
+     * Sinhala: නව ඇණවුම් පිළිබඳව කුස්සියේ සේවකයින් දැනුවත් කිරීම සඳහා Web Audio API භාවිතයෙන් අභිරුචි ශබ්දයක් (ding-dong නාදයක්) නිපදවා ධාවනය කරයි.
+     */
+    function playNotificationSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Ding Note
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        gain1.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        osc1.start(audioCtx.currentTime);
+        osc1.stop(audioCtx.currentTime + 0.4);
+        
+        // Dong Note
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.15); // D6 note
+        gain2.gain.setValueAtTime(0.25, audioCtx.currentTime + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc2.start(audioCtx.currentTime + 0.15);
+        osc2.stop(audioCtx.currentTime + 0.6);
+      } catch (e) {
+        console.warn("Audio Context playback failed (user interaction might be required first):", e);
+      }
+    }
+
+    /**
+     * English: Initializes the page by checking the session, starting polling for orders, starting the clock, and setting up an interaction listener to unlock the audio context.
+     * Sinhala: පරිශීලක සබඳතාව (session) පරීක්ෂා කිරීම, ඇණවුම් ලබා ගැනීම ආරම්භ කිරීම, ඔරලෝසුව ක්‍රියාත්මක කිරීම සහ ශබ්ද සේවා සක්‍රිය කිරීම සඳහා ක්‍රියාකාරකම් සවන්දෙන්නෙකු සැකසීම මඟින් පිටුව ආරම්භ කරයි.
+     */
+    function init() {
+      // Check session
+      fetch('check_session.php')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.logged_in || (data.role !== 'kitchen' && data.role !== 'admin')) {
+            window.location.href = 'index.html';
+          } else {
+            document.getElementById('staff-name').textContent = data.username;
+            document.getElementById('staff-initials').textContent = data.username.substring(0, 2).toUpperCase();
+            
+            // Start Polling
+            pollOrders();
+            setInterval(pollOrders, 3000);
+            
+            // Start Clocks and Timers
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(updateElapsedTimers, 10000); // refresh time-ago labels every 10s
+          }
+        })
+        .catch(() => {
+          console.warn('Session check failed. Accessing demo mode.');
+          pollOrders();
+          setInterval(pollOrders, 3000);
+        });
+
+      // User interaction listener to allow audio playback context
+      document.body.addEventListener('click', () => {
+        // Dummy trigger to unlock context
+        try {
+          const a = new (window.AudioContext || window.webkitAudioContext)();
+          if (a.state === 'suspended') a.resume();
+        } catch(e){}
+      }, { once: true });
+    }
+
+    /**
+     * English: Updates the real-time digital clock displayed on the dashboard every second.
+     * Sinhala: සෑම තත්පරයකදීම උපකරණ පුවරුවේ (dashboard) පෙන්වන තත්කාලීන ඩිජිටල් ඔරලෝසුව යාවත්කාලීන කරයි.
+     */
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      let seconds = now.getSeconds();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      
+      const strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+      document.getElementById('live-clock').textContent = strTime;
+    }
+
+    /**
+     * English: Polls the kitchen API to fetch active orders and updates the connection status indicator on the UI.
+     * Sinhala: සක්‍රිය ඇණවුම් ලබා ගැනීමට kitchen API එක ඇමතීම සිදු කරන අතර UI හි සබඳතා තත්ත්ව දර්ශකය යාවත්කාලීන කරයි.
+     */
+    function pollOrders() {
+      const statusEl = document.getElementById('connection-status');
+      
+      fetch('kitchen_api.php?action=fetch_active')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            statusEl.textContent = 'Live Monitoring';
+            document.querySelector('.status-indicator').style.color = 'var(--ready)';
+            document.querySelector('.status-indicator').style.background = 'rgba(16, 185, 129, 0.1)';
+            document.querySelector('.status-indicator').style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            document.querySelector('.status-dot').style.backgroundColor = 'var(--ready)';
+            
+            activeOrders = data.data || [];
+            processNewOrdersChime();
+            renderBoard();
+          } else {
+            statusEl.textContent = 'Session Error';
+            statusEl.style.color = '#ef4444';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          statusEl.textContent = 'Offline (Retrying...)';
+          document.querySelector('.status-indicator').style.color = '#ef4444';
+          document.querySelector('.status-indicator').style.background = 'rgba(239, 68, 68, 0.1)';
+          document.querySelector('.status-indicator').style.borderColor = 'rgba(239, 68, 68, 0.2)';
+          document.querySelector('.status-dot').style.backgroundColor = '#ef4444';
+        });
+    }
+
+    /**
+     * English: Detects newly received pending orders and triggers the notification sound to alert staff.
+     * Sinhala: අලුතින් ලැබුණු පොරොත්තු ඇණවුම් හඳුනාගෙන සේවකයින් දැනුවත් කිරීමට දැනුම්දීම් ශබ්දය ක්‍රියාත්මක කරයි.
+     */
+    function processNewOrdersChime() {
+      let containsNewPending = false;
+      
+      activeOrders.forEach(order => {
+        if (order.status === 'pending' && !knownOrderIds.has(order.order_id)) {
+          containsNewPending = true;
+          knownOrderIds.add(order.order_id);
+        } else {
+          // just track the ID in case it's in other columns
+          knownOrderIds.add(order.order_id);
+        }
+      });
+      
+      if (containsNewPending && !isInitialLoad) {
+        playNotificationSound();
+      }
+      
+      isInitialLoad = false;
+    }
+
+    /**
+     * English: Calculates the total minutes elapsed from the order timestamp to the current time.
+     * Sinhala: ඇණවුම් වේලාවේ සිට වත්මන් වේලාව දක්වා ගත වී ඇති මුළු මිනිත්තු ගණන ගණනය කරයි.
+     */
+    function getMinutesElapsed(timestampStr) {
+      // MySQL timestamp format: YYYY-MM-DD HH:MM:SS
+      // Replace space with 'T' for ISO compliance
+      const cleanTimestamp = timestampStr.replace(' ', 'T');
+      const orderTime = new Date(cleanTimestamp);
+      const now = new Date();
+      const diffMs = now - orderTime;
+      return Math.floor(diffMs / 60000);
+    }
+
+    /**
+     * English: Formats the elapsed time into a user-friendly string (e.g., "Just now" or "Xm ago").
+     * Sinhala: ගතවූ කාලය පරිශීලකයාට පහසුවෙන් තේරුම් ගත හැකි ආකාරයට සකසයි (උදා: "Just now" හෝ "Xm ago").
+     */
+    function formatElapsedTime(timestampStr) {
+      const minutes = getMinutesElapsed(timestampStr);
+      if (minutes < 1) return 'Just now';
+      return `${minutes}m ago`;
+    }
+
+    /**
+     * English: Updates all elapsed time labels on order cards and applies a warning pulse style if an order is overdue (10+ minutes).
+     * Sinhala: ඇණවුම් කාඩ්පත්වල ඇති ගතවූ කාල ලේබල යාවත්කාලීන කරන අතර ඇණවුමක් ප්‍රමාද වී ඇත්නම් (මිනිත්තු 10 කට වඩා වැඩි) අනතුරු ඇඟවීමේ මෝස්තරයක් යොදයි.
+     */
+    function updateElapsedTimers() {
+      document.querySelectorAll('.elapsed-time').forEach(el => {
+        const timestamp = el.getAttribute('data-timestamp');
+        if (timestamp) {
+          const minutes = getMinutesElapsed(timestamp);
+          el.innerHTML = `<i data-feather="clock" style="width:12px;height:12px;"></i> ${minutes < 1 ? 'Just now' : minutes + 'm ago'}`;
+          
+          // Toggle warning pulses on card
+          const card = el.closest('.order-card');
+          if (card) {
+            if (minutes >= 10) {
+              card.classList.add('overdue');
+              el.classList.add('late');
+            } else {
+              card.classList.remove('overdue');
+              el.classList.remove('late');
+            }
+          }
+        }
+      });
+      feather.replace();
+    }
+
+    /**
+     * English: Sends a request to kitchen_api.php to update an order's status and refreshes the order board.
+     * Sinhala: ඇණවුමක තත්ත්වය (status) යාවත්කාලීන කිරීමට kitchen_api.php වෙත ඉල්ලීමක් යවා ඇණවුම් පුවරුව නැවත යාවත්කාලීන කරයි.
+     */
+    function updateOrderStatus(orderId, status) {
+      const payload = {
+        order_id: orderId,
+        status: status
+      };
+
+      fetch('kitchen_api.php?action=update_status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Immediately repoll to show changes
+          pollOrders();
+        } else {
+          alert('Failed to update order: ' + data.message);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Network error occurred.');
+      });
+    }
+
+    /**
+     * English: Renders the active orders onto the columns of the kanban board (Pending, Preparing, Ready) based on their status and handles empty states.
+     * Sinhala: සක්‍රිය ඇණවුම් ඒවායේ තත්ත්වය අනුව කන්බන් පුවරුවේ (kanban board) තීරු වලට (Pending, Preparing, Ready) ඇතුළත් කර පෙන්වන අතර හිස් තීරුවල තත්ත්වයන් පාලනය කරයි.
+     */
+    function renderBoard() {
+      const lists = {
+        pending: document.getElementById('list-pending'),
+        preparing: document.getElementById('list-preparing'),
+        ready: document.getElementById('list-ready')
+      };
+
+      const counts = {
+        pending: document.getElementById('count-pending'),
+        preparing: document.getElementById('count-preparing'),
+        ready: document.getElementById('count-ready')
+      };
+
+      // Clear columns
+      Object.keys(lists).forEach(k => {
+        lists[k].innerHTML = '';
+      });
+
+      const groupedCounts = { pending: 0, preparing: 0, ready: 0 };
+
+      // Group orders by table_number within each status column
+      const columnGroups = { pending: {}, preparing: {}, ready: {} };
+
+      activeOrders.forEach(order => {
+        const col = order.status;
+        if (!columnGroups[col]) return;
+        groupedCounts[col]++;
+
+        const tableKey = order.table_number;
+        if (!columnGroups[col][tableKey]) {
+          columnGroups[col][tableKey] = [];
+        }
+        columnGroups[col][tableKey].push(order);
+      });
+
+      // Render grouped cards per column
+      Object.keys(columnGroups).forEach(col => {
+        const tableMap = columnGroups[col];
+
+        Object.keys(tableMap).forEach(tableNum => {
+          const ordersInGroup = tableMap[tableNum];
+
+          // Show group banner if multiple orders at this table in this column
+          if (ordersInGroup.length > 1) {
+            const banner = document.createElement('div');
+            banner.className = 'table-group-banner';
+            banner.innerHTML = `
+              <span class="tgb-table">🍽️ Table ${tableNum}</span>
+              <span class="tgb-count">${ordersInGroup.length} Orders</span>
+            `;
+            lists[col].appendChild(banner);
+          }
+
+          ordersInGroup.forEach(order => {
+            const minutes = getMinutesElapsed(order.order_date);
+            const isOverdue = minutes >= 10;
+
+            let actionBtnHtml = '';
+            if (col === 'pending') {
+              actionBtnHtml = `<button class="action-btn btn-accept" onclick="updateOrderStatus(${order.order_id}, 'preparing')">
+                                <i data-feather="play" style="width:16px;height:16px;"></i>
+                                Accept & Cook
+                              </button>`;
+            } else if (col === 'preparing') {
+              actionBtnHtml = `<button class="action-btn btn-complete" onclick="updateOrderStatus(${order.order_id}, 'ready')">
+                                <i data-feather="check" style="width:16px;height:16px;"></i>
+                                Food Ready
+                              </button>`;
+            } else if (col === 'ready') {
+              actionBtnHtml = `<button class="action-btn btn-serve" onclick="updateOrderStatus(${order.order_id}, 'served')">
+                                <i data-feather="check-circle" style="width:16px;height:16px;"></i>
+                                Mark Served
+                              </button>`;
+            }
+
+            const itemsHtml = order.items.map((item, index) => {
+              return `
+                <li class="item-row" onclick="this.classList.toggle('checked')">
+                  <span class="item-qty">${item.quantity}</span>
+                  <span class="item-name">${item.item_name}</span>
+                </li>
+              `;
+            }).join('');
+
+            const card = document.createElement('div');
+            card.className = `order-card ${isOverdue ? 'overdue' : ''}`;
+            card.setAttribute('data-order-id', order.order_id);
+
+            card.innerHTML = `
+              <div class="order-card-header">
+                <div class="table-num">Table ${order.table_number}</div>
+                <div class="order-info">
+                  <div class="order-id">Order #${order.order_id}</div>
+                  <div class="elapsed-time ${isOverdue ? 'late' : ''}" data-timestamp="${order.order_date}">
+                    <i data-feather="clock" style="width:12px;height:12px;"></i>
+                    <span>${formatElapsedTime(order.order_date)}</span>
+                  </div>
+                </div>
+              </div>
+              <ul class="items-list">
+                ${itemsHtml}
+              </ul>
+              <div style="margin-top: auto; padding-top: 10px;">
+                ${actionBtnHtml}
+              </div>
+            `;
+
+            lists[col].appendChild(card);
+
+            if (col === 'pending') {
+              setTimeout(() => {
+                lists['pending'].scrollTop = lists['pending'].scrollHeight;
+              }, 50);
+            }
+          });
+        });
+      });
+
+      // Update Header Counts
+      Object.keys(counts).forEach(k => {
+        counts[k].textContent = groupedCounts[k];
+
+        if (groupedCounts[k] === 0) {
+          let msg = '';
+          let icon = '';
+          if (k === 'pending') { msg = 'No new orders'; icon = 'inbox'; }
+          else if (k === 'preparing') { msg = 'No items in prep'; icon = 'activity'; }
+          else if (k === 'ready') { msg = 'Ready column clear'; icon = 'smile'; }
+
+          lists[k].innerHTML = `
+            <div class="empty-state">
+              <i data-feather="${icon}" style="width:36px;height:36px;"></i>
+              <p>${msg}</p>
+            </div>
+          `;
+        }
+      });
+
+      feather.replace();
+    }
+
+    // Initialize Page
+    init();
+  </script>
+</body>
+</html>

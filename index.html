@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="supabase_helper.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athugalpura Restaurant – SmartServe Login</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f0f2f5;
+      --primary: #FF4B2B;
+      --primary-d: #e03a1c;
+      --heading: #2B2E4A;
+      --body: #1A1A1B;
+      --muted: #6B6F8A;
+      --border: #E2E4ED;
+      --white: #ffffff;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--body);
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      display: flex;
+      width: 100%;
+      max-width: 1000px;
+      min-height: 620px;
+      background: var(--white);
+      border-radius: 30px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(43, 46, 74, 0.15);
+    }
+
+    .brand {
+      flex: 1.2;
+      background: var(--heading);
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      color: #fff;
+    }
+
+    .brand::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255, 75, 43, 0.15) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo-plate {
+      width: 60px;
+      height: 60px;
+      background: var(--white);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden; /* Image eka plate eken pita yanne nathima wenna */
+    }
+
+    .logo-plate img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Image eka square plate ekata hariyata fit wenawa */
+    }
+
+    .logo-text .name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text .sub {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.6;
+    }
+
+    .brand-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-content h2 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .brand-content h2 span {
+      color: var(--primary);
+    }
+
+    .brand-content p {
+      font-size: 15px;
+      line-height: 1.6;
+      opacity: 0.7;
+      max-width: 320px;
+      margin-bottom: 40px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .feat {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      background: rgba(255,255,255,0.05);
+      padding: 10px 15px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .feat-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    .form-panel {
+      flex: 1;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-panel h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--heading);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 35px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #f4f5f9;
+      padding: 5px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+    }
+
+    .tab {
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .tab.active {
+      background: var(--white);
+      color: var(--primary);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      border: 2px solid #f4f5f9;
+      border-radius: 15px;
+      background: #f4f5f9;
+      font-size: 14px;
+      transition: 0.3s;
+      outline: none;
+    }
+
+    .input-wrap input:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255, 75, 43, 0.1);
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .eye {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .forgot-row {
+      text-align: right;
+      margin-bottom: 30px;
+    }
+
+    .forgot-row a {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(255, 75, 43, 0.3);
+      transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-d);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(255, 75, 43, 0.4);
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .alert.err { background: #fee2e2; color: #991b1b; }
+    .alert.ok { background: #dcfce7; color: #166534; }
+    .alert.show { display: block; }
+
+    @media (max-width: 900px) {
+      .card { flex-direction: column; max-width: 500px; }
+      .brand { padding: 40px; }
+      .brand-content p, .features { display: none; }
+      .form-panel { padding: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="card">
+    <div class="brand">
+      <div class="logo-area">
+        <div class="logo-plate">
+          <img src="logo.png" alt="Athugalpura Logo">
+        </div>
+        <div class="logo-text">
+          <div class="name">Athugalpura</div>
+          <div class="sub">SmartServe OS</div>
+        </div>
+      </div>
+
+      <div class="brand-content">
+        <h2>Modern Tools,<br><span>Faster Service.</span></h2>
+        <p>A unified operating system designed to scale your restaurant business with real-time data.</p>
+        
+        <div class="features">
+          <div class="feat"><div class="feat-dot"></div> QR Self-Ordering System</div>
+          <div class="feat"><div class="feat-dot"></div> Live Kitchen Display</div>
+          <div class="feat"><div class="feat-dot"></div> Business Analytics</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <h1>Login</h1>
+      <p class="subtitle">Access your restaurant dashboard</p>
+
+      <div class="tabs">
+        <button class="tab active" id="tab-admin" onclick="setRole('admin')">Admin</button>
+        <button class="tab" id="tab-waiter" onclick="setRole('waiter')">Waiter</button>
+        <button class="tab" id="tab-kitchen" onclick="setRole('kitchen')">Kitchen</button>
+      </div>
+
+      <div class="alert" id="alert-box"></div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="field">
+          <label>Username</label>
+          <div class="input-wrap">
+            <span class="field-icon">
+              <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input type="text" id="username" placeholder="admin_username" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="field-icon">
+              <svg class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input type="password" id="password" placeholder="••••••••" required>
+            <button type="button" class="eye" onclick="togglePw()">
+              <svg id="eye-icon" class="ico" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="forgot-row">
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-submit" id="login-btn">Sign In</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let role = 'admin';
+  const placeholders = {
+    admin: { u: 'admin_username', p: 'Admin password' },
+    waiter: { u: 'waiter_username', p: 'Waiter password' },
+    kitchen: { u: 'kitchen_id', p: 'Kitchen password' }
+  };
+
+  /**
+   * English: Sets the active user role (admin, waiter, or kitchen), updates tab styling, and sets username field placeholder.
+   * Sinhala: සක්‍රිය පරිශීලක භූමිකාව (admin, waiter, හෝ kitchen) සකසයි, ටැබ් මෝස්තර යාවත්කාලීන කරයි, සහ පරිශීලක නාම ක්ෂේත්‍රයේ placeholder එක වෙනස් කරයි.
+   */
+  function setRole(r) {
+    role = r;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + r).classList.add('active');
+    document.getElementById('username').placeholder = placeholders[r].u;
+    hideAlert();
+  }
+
+  /**
+   * English: Toggles the password field's input type between text and password to show/hide the password.
+   * Sinhala: මුරපදය පෙන්වීමට/සැඟවීමට මුරපද ක්ෂේත්‍රයේ input type එක text සහ password අතර වෙනස් කරයි.
+   */
+  function togglePw() {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  /**
+   * English: Displays an alert box with a specific type ('err' or 'ok') and message text.
+   * Sinhala: නිශ්චිත වර්ගයකින් ('err' හෝ 'ok') සහ පණිවිඩයකින් සමන්විත ඇඟවීම් පෙට්ටියක් (alert box) පෙන්වයි.
+   */
+  function showAlert(type, msg) {
+    const box = document.getElementById('alert-box');
+    box.className = 'alert ' + (type === 'err' ? 'err' : 'ok') + ' show';
+    box.textContent = msg;
+  }
+
+  /**
+   * English: Hides the alert box by resetting its class name.
+   * Sinhala: ඇඟවීම් පෙට්ටියේ (alert box) class නාමය නැවත සකස් කිරීමෙන් එය සඟවයි.
+   */
+  function hideAlert() { document.getElementById('alert-box').className = 'alert'; }
+
+  /**
+   * English: Handles the login form submission by validating inputs and sending an AJAX fetch request to login.php.
+   * Sinhala: ආදානයන් වලංගු කර login.php වෙත AJAX fetch ඉල්ලීමක් යැවීම මඟින් ඇතුල්වීමේ (login) පෝරමය හැසිරවීම සිදු කරයි.
+   */
+  function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const usernameVal = document.getElementById('username').value.trim();
+    const passwordVal = document.getElementById('password').value.trim();
+
+    if (!usernameVal || !passwordVal) {
+      showAlert('err', 'Please fill in all fields.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+    hideAlert();
+
+    // Send AJAX request to login.php
+    fetch('login.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: usernameVal,
+        password: passwordVal,
+        role: role
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showAlert('ok', data.message);
+        btn.textContent = 'Redirecting...';
+        // Redirect to the appropriate dashboard after a short delay
+        setTimeout(() => {
+          window.location.href = data.redirect;
+        }, 1000);
+      } else {
+        showAlert('err', data.message);
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    })
+    .catch(err => {
+      showAlert('err', 'Connection error or server configuration issue.');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      console.error('Login error:', err);
+    });
+  }
+</script>
+</body>
+</html>

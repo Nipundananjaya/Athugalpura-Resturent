@@ -1,0 +1,90 @@
+CREATE TABLE `categories` (
+  `category_id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  PRIMARY KEY (`category_id`),
+  UNIQUE KEY `category_name` (`category_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `menu_items` (
+  `item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_id` int(11) DEFAULT NULL,
+  `item_name` varchar(150) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `is_available` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`item_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `menu_items_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `order_items` (
+  `order_item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`order_item_id`),
+  KEY `order_id` (`order_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `menu_items` (`item_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `orders` (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+  `table_number` int(11) NOT NULL,
+  `session_id` int(11) DEFAULT NULL,
+  `customer_token` varchar(255) DEFAULT NULL,
+  `total_amount` decimal(10,2) DEFAULT 0.00,
+  `status` enum('pending','preparing','ready','served','cancelled') DEFAULT 'pending',
+  `bill_requested` tinyint(1) NOT NULL DEFAULT 0,
+  `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`order_id`),
+  KEY `idx_session` (`session_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `staff` (
+  `staff_id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) NOT NULL,
+  `id_number` varchar(20) NOT NULL,
+  `phone_number` varchar(15) NOT NULL,
+  `role` enum('admin','waiter','kitchen') NOT NULL,
+  PRIMARY KEY (`staff_id`),
+  UNIQUE KEY `id_number` (`id_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `table_sessions` (
+  `session_id` int(11) NOT NULL AUTO_INCREMENT,
+  `table_number` int(11) NOT NULL,
+  `status` enum('active','closed') DEFAULT 'active',
+  `opened_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `closed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`session_id`),
+  KEY `idx_table_status` (`table_number`,`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `tables_qr` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `table_number` int(11) NOT NULL,
+  `qr_link` varchar(255) NOT NULL,
+  `qr_image_path` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `table_number` (`table_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `staff_id` int(11) DEFAULT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','waiter','kitchen') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  KEY `fk_user_staff` (`staff_id`),
+  CONSTRAINT `fk_user_staff` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`staff_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
