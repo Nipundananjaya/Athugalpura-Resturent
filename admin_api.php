@@ -25,83 +25,152 @@ $action = $_GET['action'] ?? '';
 
 if ($action === 'dashboard_data') {
     try {
-        // 1. Fetch Today's Revenue (orders placed today that are NOT cancelled)
-        $stmtRev = $pdo->query("SELECT SUM(total_amount) AS revenue 
-                                FROM orders 
-                                WHERE DATE(order_date) = CURDATE() AND status != 'cancelled'");
-        $revRow = $stmtRev->fetch();
-        $revenue = floatval($revRow['revenue'] ?? 0.00);
+        // Fetch raw tables to perform calculations in PHP (due to PDO shim JOIN & aggregation limitations)
+        $allOrders = db_select('orders');
+        $allSessions = db_select('table_sessions');
+        $categories = db_select('categories');
+        $menuItems = db_select('menu_items');
+        $orderItems = db_select('order_items');
 
-        // 2. Fetch Active Orders Count (pending, preparing, ready)
-        $stmtAct = $pdo->query("SELECT COUNT(*) AS active_count 
-                                FROM orders 
-                                WHERE status IN ('pending', 'preparing', 'ready')");
-        $actRow = $stmtAct->fetch();
-        $activeOrders = intval($actRow['active_count'] ?? 0);
-
-        // 3. Fetch Items Served Today (sum of quantities from served orders placed today)
-        $stmtServed = $pdo->query("SELECT SUM(oi.quantity) AS items_served 
-                                   FROM order_items oi
-                                   JOIN orders o ON oi.order_id = o.order_id
-                                   WHERE DATE(o.order_date) = CURDATE() AND o.status = 'served'");
-        $servedRow = $stmtServed->fetch();
-        $itemsServed = intval($servedRow['items_served'] ?? 0);
-
-        // 4. Fetch Live Orders List (pending, preparing, ready)
-        $stmtLive = $pdo->query("SELECT order_id, table_number, total_amount, status, order_date 
-                                 FROM orders 
-                                 WHERE status IN ('pending', 'preparing', 'ready')
-                                 ORDER BY order_date DESC");
-        $liveOrders = $stmtLive->fetchAll();
-
-        // Format live orders data
+        $todayStr = date('Y-m-d');
+        $revenue = 0.00;
+        $activeOrders = 0;
         $liveOrdersList = [];
-        foreach ($liveOrders as $order) {
-            $liveOrdersList[] = [
-                'order_id' => intval($order['order_id']),
-                'table_number' => intval($order['table_number']),
-                'total_amount' => floatval($order['total_amount']),
-                'status' => $order['status'],
-                'order_date' => $order['order_date']
-            ];
+
+        // 1. Calculate Revenue (today's non-cancelled orders) and Active Orders
+        foreach ($allOrders as $order) {
+            $status = $order['status'];
+            $orderDate = $order['order_date'];
+            $orderDatePart = substr($orderDate, 0, 10);
+
+            if ($orderDatePart === $todayStr && $status !== 'cancelled') {
+                $revenue += floatval($order['total_amount'] ?? 0.00);
+            }
+
+            if (in_array($status, ['pending', 'preparing', 'ready'])) {
+                $activeOrders++;
+                $liveOrdersList[] = [
+                    'order_id' => intval($order['order_id']),
+                    'table_number' => intval($order['table_number']),
+                    'total_amount' => floatval($order['total_amount'] ?? 0.00),
+                    'status' => $status,
+                    'order_date' => $orderDate
+                ];
+            }
         }
 
-        // 5. Fetch Popular Categories Chart Data (sold quantities per category)
-        $stmtCats = $pdo->query("SELECT c.category_name AS name, SUM(oi.quantity) AS total_qty
-                                 FROM order_items oi
-                                 JOIN menu_items m ON oi.item_id = m.item_id
-                                 JOIN categories c ON m.category_id = c.category_id
-                                 JOIN orders o ON oi.order_id = o.order_id
-                                 WHERE o.status != 'cancelled'
-                                 GROUP BY c.category_id, c.category_name
-                                 ORDER BY total_qty DESC
-                                 LIMIT 5");
-        $categoriesData = $stmtCats->fetchAll();
+        // Sort live orders by date descending
+        usort($liveOrdersList, function($a, $b) {
+            return strcmp($b['order_date'], $a['order_date']);
+        });
 
-        $chartLabels = [];
-        $chartData = [];
-        foreach ($categoriesData as $cat) {
-            $chartLabels[] = $cat['name'];
-            $chartData[] = intval($cat['total_qty']);
+        // 2. Calculate Items Served Today (quantities from served orders today)
+        $todayServedOrderIds = [];
+        foreach ($allOrders as $order) {
+            $orderDatePart = substr($order['order_date'], 0, 10);
+            if ($orderDatePart === $todayStr && $order['status'] === 'served') {
+                $todayServedOrderIds[] = intval($order['order_id']);
+            }
         }
+
+        $itemsServed = 0;
+        if (!empty($todayServedOrderIds)) {
+            foreach ($orderItems as $item) {
+                if (in_array(intval($item['order_id']), $todayServedOrderIds)) {
+                    $itemsServed += intval($item['quantity'] ?? 0);
+                }
+            }
+        }
+
+        // 3. Calculate Occupied and Empty Tables (1 to 20 grid)
+        $occupiedTablesSet = [];
+        foreach ($allSessions as $session) {
+            if ($session['status'] === 'active') {
+                $occupiedTablesSet[intval($session['table_number'])] = true;
+            }
+        }
+        $occupiedTablesCount = count($occupiedTablesSet);
+        $emptyTablesCount = max(0, 20 - $occupiedTablesCount);
+
+        // Helper Maps for category and items
+        $catMap = [];
+        foreach ($categories as $cat) {
+            $catMap[intval($cat['category_id'])] = $cat['category_name'];
+        }
+
+        $itemToCatMap = [];
+        $itemNamesMap = [];
+        foreach ($menuItems as $mi) {
+            $itemId = intval($mi['item_id']);
+            $itemToCatMap[$itemId] = intval($mi['category_id']);
+            $itemNamesMap[$itemId] = $mi['item_name'];
+        }
+
+        $nonCancelledOrderIdsMap = [];
+        foreach ($allOrders as $order) {
+            if ($order['status'] !== 'cancelled') {
+                $nonCancelledOrderIdsMap[intval($order['order_id'])] = true;
+            }
+        }
+
+        // 4. Calculate Popular Categories Chart Data
+        $catQuantities = [];
+        foreach ($orderItems as $oi) {
+            $orderId = intval($oi['order_id']);
+            if (isset($nonCancelledOrderIdsMap[$orderId])) {
+                $itemId = intval($oi['item_id']);
+                $catId = $itemToCatMap[$itemId] ?? 0;
+                if ($catId > 0 && isset($catMap[$catId])) {
+                    $catName = $catMap[$catId];
+                    $catQuantities[$catName] = ($catQuantities[$catName] ?? 0) + intval($oi['quantity']);
+                }
+            }
+        }
+        arsort($catQuantities);
+        $topCategories = array_slice($catQuantities, 0, 5, true);
+        $chartLabels = array_keys($topCategories);
+        $chartData = array_values($topCategories);
+
+        // 5. Calculate Popular Items (Most Sold) Chart Data
+        $itemQuantities = [];
+        foreach ($orderItems as $oi) {
+            $orderId = intval($oi['order_id']);
+            if (isset($nonCancelledOrderIdsMap[$orderId])) {
+                $itemId = intval($oi['item_id']);
+                if (isset($itemNamesMap[$itemId])) {
+                    $itemName = $itemNamesMap[$itemId];
+                    $itemQuantities[$itemName] = ($itemQuantities[$itemName] ?? 0) + intval($oi['quantity']);
+                }
+            }
+        }
+        arsort($itemQuantities);
+        $topItems = array_slice($itemQuantities, 0, 5, true);
+        $itemLabels = array_keys($topItems);
+        $itemData = array_values($topItems);
 
         echo json_encode([
             'success' => true,
             'stats' => [
                 'revenue' => $revenue,
                 'active_orders' => $activeOrders,
-                'items_served' => $itemsServed
+                'items_served' => $itemsServed,
+                'occupied_tables' => $occupiedTablesCount,
+                'empty_tables' => $emptyTablesCount
             ],
             'live_orders' => $liveOrdersList,
             'chart' => [
                 'labels' => $chartLabels,
                 'data' => $chartData
+            ],
+            'items_chart' => [
+                'labels' => $itemLabels,
+                'data' => $itemData
             ]
         ]);
 
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
     exit;
 }

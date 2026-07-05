@@ -186,7 +186,7 @@ html,body{
 
 .stats-grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(5,1fr);
   gap:25px;
 }
 .stat-card{
@@ -212,6 +212,18 @@ html,body{
 }
 .stat-card.p-card::before{
   background:var(--primary);
+}
+.stat-card.active-card::before {
+  background: #f59e0b;
+}
+.stat-card.served-card::before {
+  background: #8b5cf6;
+}
+.stat-card.occupied-card::before {
+  background: #3b82f6;
+}
+.stat-card.empty-card::before {
+  background: #10b981;
 }
 .stat-card .label{
   font-size:12px;
@@ -1328,23 +1340,27 @@ html,body{
           <span class="label">Today's Revenue</span>
           <span class="value" id="stat-revenue">Rs. 0.00</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card active-card">
           <span class="label">Active Orders</span>
           <span class="value" id="stat-active-orders">0</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card served-card">
           <span class="label">Items Served</span>
           <span class="value" id="stat-items-served">0</span>
         </div>
-        <div class="stat-card">
-          <span class="label">Total Tables</span>
-          <span class="value" id="stat-total-tables">15</span>
+        <div class="stat-card occupied-card">
+          <span class="label">Occupied Tables</span>
+          <span class="value" id="stat-occupied-tables">0</span>
+        </div>
+        <div class="stat-card empty-card">
+          <span class="label">Empty Tables</span>
+          <span class="value" id="stat-empty-tables">20</span>
         </div>
       </section>
 
       <div class="dashboard-grid">
         
-        <div class="card">
+        <div class="card" style="grid-row: span 2;">
           <div class="card-title">
             <span>Live Orders Monitor</span>
           </div>
@@ -1373,6 +1389,15 @@ html,body{
           </div>
           <div class="chart-container">
             <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Popular Items (Most Sold)</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="itemsChart"></canvas>
           </div>
         </div>
 
@@ -1984,6 +2009,54 @@ function initCategoryChart(labels = ['No Data Available'], data = [1], bgColors 
 
 // Initial placeholder render
 initCategoryChart();
+
+let itemsChart = null;
+
+/**
+ * English: Initialises (or re-draws) the horizontal bar chart showing popular menu items.
+ * Sinhala: ජනප්‍රිය ආහාර වර්ග (භාණ්ඩ) ප්‍රමාණයන් පෙන්වන horizontal bar chart එක අරඹයි.
+ */
+function initItemsChart(labels = ['No Data Available'], data = [0], bgColors = ['#E2E4ED']) {
+  const ctx = document.getElementById('itemsChart').getContext('2d');
+  
+  if (itemsChart) {
+    itemsChart.destroy();
+  }
+  
+  itemsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Quantity Sold',
+        data: data,
+        backgroundColor: bgColors,
+        borderWidth: 0,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Segoe UI', size: 10 } }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Segoe UI', size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+// Initial placeholder render
+initItemsChart();
 </script>
 
 <script>
@@ -2740,6 +2813,8 @@ function pollDashboardData() {
         document.getElementById('stat-revenue').textContent = 'Rs. ' + parseFloat(data.stats.revenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('stat-active-orders').textContent = data.stats.active_orders;
         document.getElementById('stat-items-served').textContent = data.stats.items_served;
+        document.getElementById('stat-occupied-tables').textContent = data.stats.occupied_tables;
+        document.getElementById('stat-empty-tables').textContent = data.stats.empty_tables;
 
         // 2. Update live orders table
         const tbody = document.getElementById('orders-table-body');
@@ -2769,6 +2844,14 @@ function pollDashboardData() {
           initCategoryChart(data.chart.labels, data.chart.data, colors.slice(0, data.chart.labels.length));
         } else {
           initCategoryChart(['No Data Available'], [1], ['#E2E4ED']);
+        }
+
+        // 4. Update items chart
+        if (data.items_chart && data.items_chart.labels && data.items_chart.labels.length > 0) {
+          const itemColors = ['#FF4B2B', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+          initItemsChart(data.items_chart.labels, data.items_chart.data, itemColors.slice(0, data.items_chart.labels.length));
+        } else {
+          initItemsChart(['No Data Available'], [0], ['#E2E4ED']);
         }
       }
     })
