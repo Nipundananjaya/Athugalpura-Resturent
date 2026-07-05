@@ -268,15 +268,63 @@ class SupabaseStatement {
 
         // ------- INSERT -------
         if (stripos($sql, 'INSERT') === 0) {
-            preg_match('/INTO\s+["`]?(\w+)["`]?\s*\(([^)]+)\)/i', $sql, $m);
+            preg_match('/INTO\s+["`]?(\w+)["`]?\s*\(([^)]+)\)\s*VALUES\s*\((.+)\)/is', $sql, $m);
             $table   = $m[1] ?? '';
-            $columns = array_map('trim', explode(',', $m[2] ?? ''));
-            $data    = [];
-            $vals    = array_values($params);
-            foreach ($columns as $i => $col) {
-                $col = trim($col, '"` ');
-                $data[$col] = $vals[$i] ?? null;
+            $columns = array_map(function($c) { return trim($c, '"` '); }, explode(',', $m[2] ?? ''));
+            $valuesPart = $m[3] ?? '';
+
+            // Split the VALUES part by comma, respecting quotes
+            $valuesList = [];
+            $current = '';
+            $inQuote = false;
+            $quoteChar = '';
+            $len = strlen($valuesPart);
+            for ($i = 0; $i < $len; $i++) {
+                $char = $valuesPart[$i];
+                if (($char === "'" || $char === '"') && ($i === 0 || $valuesPart[$i-1] !== '\\')) {
+                    if ($inQuote && $char === $quoteChar) {
+                        $inQuote = false;
+                    } else if (!$inQuote) {
+                        $inQuote = true;
+                        $quoteChar = $char;
+                    }
+                    $current .= $char;
+                } else if ($char === ',' && !$inQuote) {
+                    $valuesList[] = trim($current);
+                    $current = '';
+                } else {
+                    $current .= $char;
+                }
             }
+            if ($current !== '') {
+                $valuesList[] = trim($current);
+            }
+
+            $data = [];
+            $vals = array_values($params);
+            $placeholderIndex = 0;
+
+            foreach ($columns as $i => $col) {
+                $valToken = $valuesList[$i] ?? 'null';
+                
+                if ($valToken === '?' || strpos($valToken, ':') === 0) {
+                    $data[$col] = $vals[$placeholderIndex] ?? null;
+                    $placeholderIndex++;
+                } else {
+                    if (preg_match('/^\'(.*)\'$/s', $valToken, $qm) || preg_match('/^"(.*)"$/s', $valToken, $qm)) {
+                        $data[$col] = $qm[1];
+                    } else if (strtolower($valToken) === 'null') {
+                        $data[$col] = null;
+                    } else if (is_numeric($valToken)) {
+                        $data[$col] = $valToken + 0;
+                    } else if (strtoupper($valToken) === 'NOW()' || strtoupper($valToken) === 'CURRENT_TIMESTAMP') {
+                        $data[$col] = date('Y-m-d H:i:s');
+                    } else {
+                        $data[$col] = $valToken;
+                    }
+                }
+            }
+
             $r = db_insert($table, $data);
             return $r ?? [];
         }
